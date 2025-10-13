@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect, lazy, Suspense } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "@remix-run/react";
 import LoadingSpinner, { SkeletonLoader, CardSkeleton, ButtonLoading } from "../components/LoadingSpinner";
 import ErrorBoundary from "../components/ErrorBoundary";
 
-// Lazy load Google Maps component
-const LazyGoogleMap = lazy(() => import("../components/LazyGoogleMap"));
+// Import Leaflet Map component
+import LeafletMap from "../components/LeafletMap";
 
 export const meta = () => {
   return [
@@ -18,13 +18,52 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [showOilModal, setShowOilModal] = useState(false);
   const [motorCondition, setMotorCondition] = useState({
-    engine: { status: 'good', percentage: 85, lastCheck: '2024-01-15' },
-    brake: { status: 'warning', percentage: 65, lastCheck: '2024-01-10' },
-    oil: { status: 'critical', percentage: 25, lastCheck: '2024-01-05' },
-    battery: { status: 'good', percentage: 90, lastCheck: '2024-01-12' },
-    tire: { status: 'good', percentage: 80, lastCheck: '2024-01-08' },
-    chain: { status: 'warning', percentage: 60, lastCheck: '2024-01-03' }
+    oil: { status: 'critical', percentage: 25, lastCheck: '2024-01-05' }
   });
+
+  // Data edukasi motor
+  const motorEducation = [
+    {
+      title: "Tips Perawatan Harian",
+      content: "Periksa tekanan ban, level oli, dan kondisi rem sebelum berkendara",
+      icon: "🔧"
+    },
+    {
+      title: "Ganti Oli Rutin",
+      content: "Ganti oli setiap 2000-3000 km atau 3 bulan sekali untuk performa optimal",
+      icon: "🛢️"
+    },
+    {
+      title: "Pemanasan Mesin",
+      content: "Panaskan mesin 2-3 menit sebelum berkendara, terutama di pagi hari",
+      icon: "🌡️"
+    }
+  ];
+
+  // Data rekomendasi oli dengan harga
+  const oilRecommendations = [
+    {
+      brand: "Yamalube",
+      type: "10W-40 Semi Synthetic",
+      price: "Rp 45.000",
+      volume: "800ml",
+      rating: 4.8
+    },
+    {
+      brand: "Shell Advance",
+      type: "10W-40 Fully Synthetic",
+      price: "Rp 65.000",
+      volume: "1L",
+      rating: 4.9
+    },
+    {
+      brand: "Motul 3000",
+      type: "20W-50 Mineral",
+      price: "Rp 35.000",
+      volume: "800ml",
+      rating: 4.5
+    }
+  ];
 
   // Spare Parts state - moved to component level to avoid hooks rule violation
   const [selectedPart, setSelectedPart] = useState(null);
@@ -393,36 +432,86 @@ export default function Dashboard() {
           </svg>
           Kondisi Motor Saat Ini
         </h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {Object.entries(motorCondition).map(([key, condition]) => {
-            const componentNames = {
-              engine: 'Mesin',
-              brake: 'Rem',
-              oil: 'Oli',
-              battery: 'Aki',
-              tire: 'Ban',
-              chain: 'Rantai'
-            };
-            
-            return (
-              <div key={key} className={`p-4 rounded-lg border backdrop-blur-sm ${getStatusColor(condition.status)}`}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium">{componentNames[key]}</span>
-                  <span className="text-sm opacity-80">{condition.percentage}%</span>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Status Oli */}
+          <div className="md:col-span-1">
+            <h4 className="text-lg font-semibold text-white mb-3">Status Oli Mesin</h4>
+            {Object.entries(motorCondition).map(([key, condition]) => {
+              const componentNames = {
+                oil: 'Oli Mesin'
+              };
+              
+              return (
+                <div key={key} className={`p-4 rounded-lg border backdrop-blur-sm ${getStatusColor(condition.status)}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium">{componentNames[key]}</span>
+                    <span className="text-sm opacity-80">{condition.percentage}%</span>
+                  </div>
+                  <div className="w-full bg-slate-700/50 rounded-full h-2 mb-2">
+                    <div 
+                      className={`h-2 rounded-full transition-all duration-500 ${
+                        condition.status === 'good' ? 'bg-green-500' :
+                        condition.status === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
+                      }`}
+                      style={{ width: `${condition.percentage}%` }}
+                    />
+                  </div>
+                  <p className="text-xs opacity-70">Cek terakhir: {condition.lastCheck}</p>
+                  {condition.status === 'critical' && (
+                    <button 
+                      ref={oilModalTriggerRef}
+                      onClick={() => setShowOilModal(true)}
+                      className="mt-2 w-full bg-red-500 hover:bg-red-600 text-white py-2 px-3 rounded text-sm font-medium transition-colors"
+                    >
+                      ⚠️ Segera Ganti Oli!
+                    </button>
+                  )}
                 </div>
-                <div className="w-full bg-slate-700/50 rounded-full h-2 mb-2">
-                  <div 
-                    className={`h-2 rounded-full transition-all duration-500 ${
-                      condition.status === 'good' ? 'bg-green-500' :
-                      condition.status === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
-                    }`}
-                    style={{ width: `${condition.percentage}%` }}
-                  />
+              );
+            })}
+          </div>
+
+          {/* Tips Perawatan Motor */}
+          <div className="md:col-span-1">
+            <h4 className="text-lg font-semibold text-white mb-3">Tips Perawatan Motor</h4>
+            <div className="space-y-3">
+              {motorEducation.map((tip, index) => (
+                <div key={index} className="p-3 rounded-lg bg-slate-700/30 border border-slate-600/50">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl">{tip.icon}</span>
+                    <div>
+                      <h5 className="font-medium text-white text-sm">{tip.title}</h5>
+                      <p className="text-xs text-gray-300 mt-1">{tip.content}</p>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-xs opacity-70">Cek terakhir: {condition.lastCheck}</p>
-              </div>
-            );
-          })}
+              ))}
+            </div>
+          </div>
+
+          {/* Rekomendasi Oli */}
+          <div className="md:col-span-1">
+            <h4 className="text-lg font-semibold text-white mb-3">Rekomendasi Oli</h4>
+            <div className="space-y-3">
+              {oilRecommendations.map((oil, index) => (
+                <div key={index} className="p-3 rounded-lg bg-slate-700/30 border border-slate-600/50">
+                  <div className="flex items-center justify-between mb-1">
+                    <h5 className="font-medium text-white text-sm">{oil.brand}</h5>
+                    <div className="flex items-center gap-1">
+                      <span className="text-yellow-400 text-xs">⭐</span>
+                      <span className="text-xs text-gray-300">{oil.rating}</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-300 mb-1">{oil.type}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-400">{oil.volume}</span>
+                    <span className="text-sm font-semibold text-green-400">{oil.price}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -632,204 +721,81 @@ export default function Dashboard() {
       return (
       <div className="space-y-6">
         <div className="bg-gradient-to-br from-slate-800/60 via-slate-700/40 to-slate-800/60 backdrop-blur-xl border border-cyan-500/20 ring-1 ring-white/10 rounded-xl p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold text-white flex items-center gap-2">
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-              </svg>
-              Workshop Finder
-            </h3>
-            <div className="text-sm text-gray-400">
-              {workshops.length} bengkel ditemukan
+          <div className="flex items-center justify-center min-h-[500px]">
+            <div className="text-center max-w-md">
+              <div className="text-6xl mb-6">🚧</div>
+              <h3 className="text-2xl font-bold text-white mb-3">
+                Fitur Workshop Finder
+              </h3>
+              <p className="text-cyan-400 text-lg mb-4 font-medium">
+                Sedang dalam pengembangan
+              </p>
+              <p className="text-slate-400 text-sm leading-relaxed mb-6">
+                Kami sedang mengembangkan fitur pencarian bengkel terdekat dengan peta interaktif. 
+                Fitur ini akan segera tersedia untuk membantu Anda menemukan bengkel terpercaya di sekitar lokasi Anda.
+              </p>
+              <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-slate-700/50 to-slate-600/50 border border-slate-500/30 rounded-lg">
+                <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></div>
+                <span className="text-slate-300 text-sm font-medium">Coming Soon</span>
+              </div>
             </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderSparePartsMarketplace = () => {
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="bg-gradient-to-br from-slate-800/60 via-slate-700/40 to-slate-800/60 backdrop-blur-xl border border-cyan-500/20 ring-1 ring-white/10 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-2">Spare Parts Marketplace</h2>
+              <p className="text-cyan-400">Temukan spare parts berkualitas untuk motor Anda</p>
+            </div>
+            <Link 
+              to="/spare-parts" 
+              className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+              Lihat Semua
+            </Link>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Map */}
-            <div className="relative">
-              <Suspense fallback={
-                <div className="w-full h-96 rounded-lg border border-slate-600/50 flex items-center justify-center bg-slate-800" style={{ minHeight: '400px' }}>
-                  <div className="text-white text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500 mx-auto mb-2"></div>
-                    <p>Loading map...</p>
-                  </div>
-                </div>
-              }>
-                <LazyGoogleMap 
-                  userLocation={userLocation}
-                  workshops={workshops}
-                  selectedWorkshop={selectedWorkshop}
-                  onWorkshopSelect={setSelectedWorkshop}
-                />
-              </Suspense>
-            </div>
-
-            {/* Workshop List */}
-            <div className="space-y-4 max-h-96 overflow-y-auto">
-              <h4 className="font-semibold text-white mb-3 sticky top-0 bg-slate-800/90 backdrop-blur-sm py-2 -mx-2 px-2 rounded">
-                Bengkel Terdekat
-              </h4>
-              {isLoadingLocation ? (
-                <div className="flex flex-col items-center justify-center py-8">
-                  <LoadingSpinner size="medium" text="Mencari lokasi Anda..." />
-                </div>
-              ) : (
-                workshops.map((workshop) => (
-                <div 
-                  key={workshop.id} 
-                  className={`p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
-                    selectedWorkshop?.id === workshop.id 
-                      ? 'bg-cyan-500/20 border-cyan-500/50 ring-1 ring-cyan-500/30' 
-                      : 'bg-slate-700/30 border-slate-600/50 hover:bg-slate-700/50 hover:border-slate-500/50'
-                  }`}
-                  onClick={() => setSelectedWorkshop(workshop)}
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <h5 className="font-semibold text-white">{workshop.name}</h5>
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1">
-                        <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                        <span className="text-sm text-gray-300">{workshop.rating}</span>
-                      </div>
-                      <span className="text-xs text-cyan-400 bg-cyan-500/20 px-2 py-1 rounded">
-                        {workshop.distance}
-                      </span>
-                    </div>
-                  </div>
-                  <p className="text-gray-300 text-sm mb-2">{workshop.address}</p>
-                  <p className="text-gray-400 text-xs mb-2">
-                    <svg className="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+          {/* Featured Products Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sparePartsData.slice(0, 6).map((product, index) => (
+              <div key={index} className="bg-slate-800/40 border border-slate-700 rounded-lg p-4 hover:border-cyan-500/50 transition-all duration-300">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 7.172V5L8 4z" />
                     </svg>
-                    {workshop.phone}
-                  </p>
-                  <p className="text-gray-400 text-xs mb-3">
-                    <svg className="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
-                    </svg>
-                    {workshop.openHours}
-                  </p>
-                  <div className="flex flex-wrap gap-1 mb-2">
-                    {workshop.services.slice(0, 3).map((service, index) => (
-                      <span key={index} className="px-2 py-1 bg-blue-500/20 text-blue-300 text-xs rounded">
-                        {service}
-                      </span>
-                    ))}
-                    {workshop.services.length > 3 && (
-                      <span className="px-2 py-1 bg-gray-500/20 text-gray-300 text-xs rounded">
-                        +{workshop.services.length - 3} lainnya
-                      </span>
-                    )}
                   </div>
-                  <div className="flex flex-wrap gap-1">
-                    {workshop.specialties.map((specialty, index) => (
-                      <span key={index} className="px-2 py-1 bg-green-500/20 text-green-300 text-xs rounded">
-                        {specialty}
-                      </span>
-                    ))}
+                  <div>
+                    <h3 className="font-semibold text-white">{product.brand}</h3>
+                    <p className="text-sm text-gray-400">{product.type}</p>
                   </div>
                 </div>
-              ))
-              )}
-            </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-cyan-400 font-bold">{product.price}</p>
+                    <p className="text-xs text-gray-500">{product.volume}</p>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <span className="text-sm text-gray-300">{product.rating}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-
-          {/* Selected Workshop Details */}
-          {selectedWorkshop && (
-            <div className="mt-6 p-6 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 rounded-lg">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h4 className="font-bold text-white text-lg mb-1">{selectedWorkshop.name}</h4>
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="flex items-center gap-1">
-                      <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                      </svg>
-                      <span className="text-white font-semibold">{selectedWorkshop.rating}</span>
-                    </div>
-                    <span className="text-cyan-400 bg-cyan-500/20 px-2 py-1 rounded text-sm">
-                      {selectedWorkshop.distance}
-                    </span>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => setSelectedWorkshop(null)}
-                  className="text-gray-300 hover:text-white transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                  </svg>
-                </button>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm mb-4">
-                <div className="space-y-2">
-                  <p className="text-gray-300">
-                    <svg className="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                    </svg>
-                    <strong>Alamat:</strong> {selectedWorkshop.address}
-                  </p>
-                  <p className="text-gray-300">
-                    <svg className="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
-                    </svg>
-                    <strong>Telepon:</strong> {selectedWorkshop.phone}
-                  </p>
-                  <p className="text-gray-300">
-                    <svg className="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
-                    </svg>
-                    <strong>Jam Buka:</strong> {selectedWorkshop.openHours}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-300 mb-2"><strong>Spesialisasi:</strong></p>
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {selectedWorkshop.specialties.map((specialty, index) => (
-                      <span key={index} className="px-2 py-1 bg-green-500/20 text-green-300 text-xs rounded">
-                        {specialty}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mb-4">
-                <p className="text-gray-300 mb-2"><strong>Layanan Tersedia:</strong></p>
-                <div className="flex flex-wrap gap-1">
-                  {selectedWorkshop.services.map((service, index) => (
-                    <span key={index} className="px-3 py-1 bg-blue-500/20 text-blue-300 text-sm rounded">
-                      {service}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="flex gap-3">
-                <button className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg hover:from-green-400 hover:to-green-500 transition-all duration-200 text-sm flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
-                  </svg>
-                  Hubungi
-                </button>
-                <button className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-blue-400 hover:to-blue-500 transition-all duration-200 text-sm flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M21.71 11.29l-9-9c-.39-.39-1.02-.39-1.41 0l-9 9c-.39.39-.39 1.02 0 1.41l9 9c.39.39 1.02.39 1.41 0l9-9c.39-.39.39-1.02 0-1.41zM14 14.5V12h-4v3H8v-4c0-.55.45-1 1-1h5V7.5l3.5 3.5-3.5 3.5z"/>
-                  </svg>
-                  Petunjuk Arah
-                </button>
-                <button className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-purple-400 hover:to-purple-500 transition-all duration-200 text-sm flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/>
-                  </svg>
-                  Booking
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     );
