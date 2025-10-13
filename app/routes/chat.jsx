@@ -25,6 +25,14 @@ const fadeInStyle = `
   .animate-fadeIn {
     animation: fadeIn 0.3s ease-out;
   }
+  /* Hide scrollbar */
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 // Inject CSS ke head
@@ -566,12 +574,7 @@ export default function Chat() {
     );
   };
 
-  const quickActions = [
-    { text: 'Booking Bengkel', action: 'booking' },
-    { text: 'Lihat Estimasi Biaya', action: 'estimate' },
-    { text: 'Ulangi Diagnosa', action: 'restart' },
-    { text: 'Riwayat Chat', action: 'history' }
-  ];
+  // Quick actions removed as per requirements
 
   // Enhanced auto scroll with animation timing
   const scrollToBottom = () => {
@@ -590,9 +593,8 @@ export default function Chat() {
     setMessages([{
       id: 1,
       type: 'bot',
-      content: 'Halo! Saya BengkelAI, asisten AI untuk motor Anda. Ceritakan masalah yang dialami motor Anda, dan saya akan membantu mendiagnosa serta memberikan solusi terbaik. 🚲⚡\n\n🔄 **Status:** Real-time AI Analysis Ready',
+      content: 'Halo! Saya BengkelAI, asisten AI untuk motor Anda. Ceritakan masalah yang dialami motor Anda, dan saya akan membantu mendiagnosa serta memberikan solusi terbaik. (Status: Real-time AI Analysis Ready)',
       timestamp: new Date(),
-      source: 'BengkelAI v1.0',
       urgency: 'low',
       category: 'system'
     }]);
@@ -776,21 +778,9 @@ export default function Chat() {
       <header className="backdrop-blur-xl bg-gradient-to-r from-slate-900/80 via-slate-800/60 to-slate-900/80 border-b border-cyan-500/20 px-3 sm:px-4 py-3 sm:py-4 relative z-10 ring-1 ring-white/10">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center flex-1 min-w-0">
-            <Link to="/" className="flex items-center mr-3 sm:mr-6 hover:opacity-80 transition-opacity flex-shrink-0">
-              <img 
-                src="/32x32.svg" 
-                alt="BengkelAI Logo" 
-                className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3"
-                width="32"
-                height="32"
-              />
-              <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">BengkelAI</span>
+            <Link to="/" className="text-cyan-400 hover:text-cyan-300 transition-colors duration-200 text-sm sm:text-base font-medium mr-3 sm:mr-6">
+              ← Dashboard
             </Link>
-            <nav className="hidden md:flex items-center space-x-4">
-              <a href="/dashboard" className="text-cyan-300 hover:text-cyan-100 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-white/10">
-                Dashboard
-              </a>
-            </nav>
             <div className="flex items-center min-w-0 flex-1">
               <div className={`w-2 h-2 rounded-full mr-2 flex-shrink-0 ${
                 isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'
@@ -800,7 +790,6 @@ export default function Chat() {
               </span>
               {isTyping && (
                 <span className="ml-2 sm:ml-3 text-xs text-blue-600 flex items-center flex-shrink-0">
-                  <span className="mr-1">🤖</span>
                   <span className="hidden sm:inline">Analyzing{typingDots}</span>
                   <span className="sm:hidden">AI{typingDots}</span>
                 </span>
@@ -819,7 +808,7 @@ export default function Chat() {
         {/* Messages Area - Scrollable */}
         <div 
           ref={messagesScrollRef}
-          className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-4 pt-4 sm:pt-6 space-y-3 sm:space-y-4 scrollbar-thin scrollbar-thumb-cyan-500/20 scrollbar-track-transparent"
+          className="flex-1 overflow-y-auto overflow-x-hidden hide-scrollbar px-3 sm:px-4 pt-4 sm:pt-6 space-y-3 sm:space-y-4 scrollbar-thin scrollbar-thumb-cyan-500/20 scrollbar-track-transparent"
           style={{
             height: 'calc(100dvh - 0px)',
             paddingBottom: `calc(${footerH}px + env(safe-area-inset-bottom, 0px))`
@@ -883,31 +872,9 @@ export default function Chat() {
                 } ${
                   animatingMessages.has(message.id) ? 'ring-2 ring-cyan-400/50 ring-offset-2 ring-offset-slate-900' : ''
                 }`}>
-                  {message.type === 'bot' && (
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center">
-                        <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-teal-600 rounded-full flex items-center justify-center mr-2">
-                          <span className="text-white text-xs font-bold">AI</span>
-                        </div>
-                        {message.source && (
-                          <span className="text-xs text-cyan-300/80">{message.source}</span>
-                        )}
-                      </div>
-                      {message.urgency && (
-                        <div className="flex items-center gap-1">
-                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getUrgencyBadge(message.urgency).color}`}>
-                            {getUrgencyBadge(message.urgency).text}
-                          </span>
-                          {message.category && (
-                            <span className="px-2 py-1 bg-slate-700/50 text-cyan-300 rounded-full text-xs capitalize border border-cyan-500/20">
-                              {message.category}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap group-hover:text-white transition-colors duration-200">{renderFormattedText(message.content)}</p>
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap group-hover:text-white transition-colors duration-200">
+                    {renderFormattedText(message.content + (message.urgency && message.urgency !== 'low' ? ` (Prioritas: ${message.urgency === 'high' ? 'Tinggi' : message.urgency === 'critical' ? 'Kritis' : 'Sedang'})` : ''))}
+                  </p>
                   
                   {/* Message glow effect for bot messages */}
                   {message.type === 'bot' && animatingMessages.has(message.id) && (
@@ -932,11 +899,6 @@ export default function Chat() {
                       }`} />
                       {message.timestamp.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                     </span>
-                    {message.source && (
-                      <span className="text-cyan-300 font-medium px-2 py-1 bg-cyan-400/10 rounded-full border border-cyan-400/20">
-                        {message.source}
-                      </span>
-                    )}
                   </div>
                 </div>
               </div>
@@ -948,9 +910,6 @@ export default function Chat() {
             <div className="flex justify-start">
               <div className="bg-gradient-to-br from-slate-800/60 via-slate-700/40 to-slate-800/60 border border-cyan-400/30 rounded-2xl rounded-bl-md px-4 py-3 shadow-lg backdrop-blur-xl ring-1 ring-white/10">
                 <div className="flex items-center space-x-2">
-                  <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-teal-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">AI</span>
-                  </div>
                   <div className="flex items-center space-x-1">
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
@@ -974,72 +933,32 @@ export default function Chat() {
 
         {/* Sticky Bottom Section - Quick Actions, Suggestions, and Input */}
         <div ref={footerRef} className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900 via-slate-900/95 to-slate-900/90 backdrop-blur-xl border-t border-cyan-500/20 ring-1 ring-white/10 z-50">
-          <div className="max-w-4xl mx-auto">
-          {/* Quick Actions */}
-          <div className="px-3 sm:px-4 py-2 border-b border-cyan-500/10">
-            <div className="flex flex-wrap gap-1 sm:gap-2 justify-center mb-2">
-              {quickActions.map((action, index) => (
-                <button
-                   key={index}
-                   onClick={() => handleQuickAction(action.action)}
-                   className="backdrop-blur-xl bg-slate-800/40 hover:bg-slate-700/60 text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm border border-cyan-500/20 transition-all duration-200 hover:border-cyan-400/40 hover:shadow-lg ring-1 ring-white/10"
-                >
-                  <span className="hidden sm:inline">{action.text}</span>
-                  <span className="sm:hidden">{action.text.split(' ')[0]}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+            <div className="max-w-4xl mx-auto">
 
-          {/* Quick Suggestions - Collapsible on mobile */}
+          {/* Quick Suggestions */}
           <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-cyan-500/10">
             <p className="text-xs text-cyan-300/80 mb-2">Coba tanyakan masalah motor Anda:</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1 sm:gap-2 mb-2">
-              {[
-                { text: 'Motor susah hidup', query: 'susah hidup', category: 'Starter' },
-                { text: 'Asap putih keluar', query: 'asap putih', category: 'Mesin' },
-                { text: 'Rem tidak pakem', query: 'rem blong', category: 'Rem' },
-                { text: 'Oli bocor', query: 'oli bocor', category: 'Pelumasan' },
-                { text: 'Mesin kasar', query: 'mesin kasar', category: 'Mesin' },
-                { text: 'Gigi susah masuk', query: 'gigi susah masuk', category: 'Transmisi' }
-              ].map((suggestion) => (
-                <button
-                  key={suggestion.query}
-                  onClick={() => {
-                    setInputMessage(suggestion.query);
-                    setTimeout(() => handleSendMessage(), 100);
-                  }}
-                  className="px-2 sm:px-3 py-1.5 sm:py-2 backdrop-blur-xl bg-slate-800/40 border border-cyan-500/20 rounded-lg text-xs text-white hover:bg-slate-700/60 hover:border-cyan-400/40 transition-all duration-200 hover:shadow-lg text-center ring-1 ring-white/10"
-                >
-                  <div className="font-medium text-xs sm:text-sm">{suggestion.text}</div>
-                  <div className="text-cyan-300/60 text-xs mt-1 hidden sm:block">{suggestion.category}</div>
-                </button>
-              ))}
-            </div>
-            
-            {/* Emergency Actions */}
-            <div className="border-t border-cyan-500/10 pt-2">
-              <p className="text-xs text-red-400 mb-2">Darurat:</p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setInputMessage('rem blong');
-                    setTimeout(() => handleSendMessage(), 100);
-                  }}
-                  className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 backdrop-blur-xl bg-red-900/40 text-red-300 rounded-lg text-xs font-medium hover:bg-red-800/60 transition-all duration-200 border border-red-500/30 ring-1 ring-white/10"
-                >
-                  Rem Bermasalah
-                </button>
-                <button
-                  onClick={() => {
-                    setInputMessage('oli habis');
-                    setTimeout(() => handleSendMessage(), 100);
-                  }}
-                  className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 backdrop-blur-xl bg-orange-900/40 text-orange-300 rounded-lg text-xs font-medium hover:bg-orange-800/60 transition-all duration-200 border border-orange-500/30 ring-1 ring-white/10"
-                >
-                  Oli Habis
-                </button>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-2">
+               {[
+                 { text: 'Motor susah hidup', query: 'susah hidup', category: 'Starter' },
+                 { text: 'Asap putih keluar', query: 'asap putih', category: 'Mesin' },
+                 { text: 'Rem tidak pakem', query: 'rem blong', category: 'Rem' },
+                 { text: 'Oli bocor', query: 'oli bocor', category: 'Pelumasan' },
+                 { text: 'Mesin kasar', query: 'mesin kasar', category: 'Mesin' },
+                 { text: 'Gigi susah masuk', query: 'gigi susah masuk', category: 'Transmisi' }
+               ].map((suggestion) => (
+                 <button
+                   key={suggestion.query}
+                   onClick={() => {
+                     setInputMessage(suggestion.query);
+                     setTimeout(() => handleSendMessage(), 100);
+                   }}
+                   className="px-3 sm:px-4 py-2 sm:py-3 backdrop-blur-xl bg-slate-800/40 border border-cyan-500/20 rounded-lg text-xs sm:text-sm text-white hover:bg-slate-700/60 hover:border-cyan-400/40 transition-all duration-200 hover:shadow-lg text-center ring-1 ring-white/10 hover:scale-[1.02]"
+                 >
+                   <div className="font-medium">{suggestion.text}</div>
+                   <div className="text-cyan-300/60 text-xs mt-1">{suggestion.category}</div>
+                 </button>
+               ))}
             </div>
           </div>
 
@@ -1053,9 +972,9 @@ export default function Chat() {
                 onChange={onInputChange}
                 onKeyPress={handleKeyPress}
                 placeholder="Ketik gejala motor Anda..."
-                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 backdrop-blur-xl bg-slate-800/40 border border-cyan-500/30 rounded-2xl focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400/50 resize-none text-sm text-white placeholder-white/60 ring-1 ring-white/10"
-                rows={1}
-                style={{ minHeight: '44px', maxHeight: '140px' }}
+                className="w-full px-4 sm:px-5 py-4 sm:py-5 backdrop-blur-xl bg-slate-800/40 border border-cyan-500/30 rounded-2xl focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400/50 resize-none text-base sm:text-lg text-white placeholder-white/60 ring-1 ring-white/10"
+                rows={2}
+                style={{ minHeight: '80px', maxHeight: '200px' }}
                 disabled={isLoading}
               />
             </div>
