@@ -118,9 +118,6 @@ export default function CTASection() {
             >
               {/* Glass highlight */}
               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-              {hoveredButton === 'secondary' && (
-                <div className="absolute inset-0 border-2 border-orange-500/30 rounded-3xl animate-pulse" />
-              )}
               {hoveredButton === 'primary' && (
                 <div className="absolute inset-0 bg-gradient-to-r from-orange-400/20 to-red-500/20 animate-pulse" />
               )}
@@ -132,6 +129,28 @@ export default function CTASection() {
               Coba Sekarang (Gratis)
             </Button>
           </Link>
+          
+          <Link to="/call-mechanic">
+            <Button 
+              variant="primary" 
+              className="group relative backdrop-blur-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white px-8 sm:px-12 py-4 sm:py-5 text-lg sm:text-xl font-bold rounded-3xl shadow-2xl transform hover:scale-105 active:scale-95 transition-all duration-300 w-full sm:min-w-[320px] border border-cyan-400/30 overflow-hidden"
+              onMouseEnter={() => setHoveredButton('mechanic')}
+              onMouseLeave={() => setHoveredButton(null)}
+            >
+              {/* Glass highlight */}
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+              {hoveredButton === 'mechanic' && (
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/20 to-blue-500/20 animate-pulse" />
+              )}
+              
+              {/* Wrench SVG Icon */}
+              <svg className="w-6 h-6 inline-block mr-3" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/>
+              </svg>
+              Panggil Montir
+            </Button>
+          </Link>
+          
           <Link to="/chat">
             <Button 
               variant="secondary" 
@@ -141,6 +160,9 @@ export default function CTASection() {
             >
               {/* Glass highlight */}
               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+              {hoveredButton === 'secondary' && (
+                <div className="absolute inset-0 border-2 border-white/30 rounded-3xl animate-pulse" />
+              )}
               
               {/* Phone SVG Icon */}
               <svg className="w-5 h-5 inline-block mr-3" fill="currentColor" viewBox="0 0 24 24">

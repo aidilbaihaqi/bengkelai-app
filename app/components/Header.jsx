@@ -49,6 +49,7 @@ export default function Header({ title }) {
               { href: '#cara-kerja', label: 'Cara Kerja' },
               { href: '#demo', label: 'Demo' },
               { href: '/call-mechanic', label: 'Panggil Montir' },
+              { href: '/booking', label: 'Booking' },
               { href: '#faq', label: 'FAQ' },
               { href: '/dashboard', label: 'Dashboard' }
             ].map((item, index) => (
