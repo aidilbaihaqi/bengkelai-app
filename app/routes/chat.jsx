@@ -14,6 +14,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link } from "@remix-run/react";
 import { json } from "@remix-run/node";
 import Button from "../components/Button";
+import OpenStreetMap from "../components/OpenStreetMap";
 import { searchDataset, getSuggestionsByCategory, getTotalEntries } from '../data/motorDataset';
 
 // CSS untuk animasi fadeIn
@@ -24,6 +25,14 @@ const fadeInStyle = `
   }
   .animate-fadeIn {
     animation: fadeIn 0.3s ease-out;
+  }
+  /* Hide scrollbar */
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 `;
 
@@ -66,6 +75,7 @@ export default function Chat() {
   const [isConnected, setIsConnected] = useState(true);
   const [typingDots, setTypingDots] = useState('');
   const [showMap, setShowMap] = useState(false);
+  const [showQuickActions, setShowQuickActions] = useState(true);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const headerRef = useRef(null);
@@ -107,69 +117,16 @@ export default function Chat() {
     const [isLoadingWorkshops, setIsLoadingWorkshops] = useState(false);
     const [workshopsError, setWorkshopsError] = useState(null);
 
-    // Fungsi untuk mengambil data workshop dari Google Places API
-    const fetchWorkshopsFromGooglePlaces = async (lat = -6.2088, lng = 106.8456, radius = 5000) => {
+    // Fungsi untuk refresh data bengkel (menggunakan dummy data)
+    const refreshWorkshopData = () => {
       setIsLoadingWorkshops(true);
       setWorkshopsError(null);
       
-      try {
-        // Menggunakan Google Places API Nearby Search
-        const response = await fetch(
-          `https://maps.googleapis.com/maps/api/place/nearbysearch/json?` +
-          `location=${lat},${lng}&` +
-          `radius=${radius}&` +
-          `type=car_repair&` +
-          `key=AIzaSyCzBVm-B2VXdnTupHFPpSEo30DJpI3iXsU`, // Ganti dengan API key Google Places yang valid
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        
-        if (data.status === 'OK' && data.results) {
-          // Transform Google Places data ke format yang dibutuhkan
-          const transformedWorkshops = data.results.map((place, index) => ({
-            id: place.place_id || index + 1,
-            name: place.name || 'Workshop Tidak Dikenal',
-            address: place.vicinity || place.formatted_address || 'Alamat tidak tersedia',
-            distance: calculateDistance(lat, lng, place.geometry.location.lat, place.geometry.location.lng),
-            rating: place.rating || 0,
-            phone: place.formatted_phone_number || 'Tidak tersedia',
-            services: place.types?.filter(type => 
-              ['car_repair', 'car_dealer', 'car_wash', 'gas_station'].includes(type)
-            ).map(type => type.replace('_', ' ').toUpperCase()) || ['Service Umum'],
-            price: getPriceRange(place.price_level),
-            open: place.opening_hours?.open_now ? 'Buka Sekarang' : 'Tutup/Tidak Diketahui',
-            position: { x: 30 + (index * 20), y: 25 + (index * 25) },
-            lat: place.geometry.location.lat,
-            lng: place.geometry.location.lng,
-            color: getMarkerColor(index),
-            photo: place.photos?.[0]?.photo_reference || null
-          }));
-          
-          setBengkelData(transformedWorkshops);
-        } else {
-          // Fallback ke dummy data jika API gagal
-          console.warn('Google Places API tidak mengembalikan hasil, menggunakan dummy data');
-          setBengkelData(getDummyWorkshops());
-        }
-      } catch (error) {
-        console.error('Error fetching workshops from Google Places:', error);
-        // Tidak menampilkan error, langsung gunakan dummy data
-        setWorkshopsError(null);
-        // Fallback ke dummy data jika terjadi error
+      // Simulasi loading
+      setTimeout(() => {
         setBengkelData(getDummyWorkshops());
-      } finally {
         setIsLoadingWorkshops(false);
-      }
+      }, 1000);
     };
 
     // Helper function untuk menghitung jarak
@@ -244,7 +201,7 @@ export default function Chat() {
 
     // Load workshops saat komponen dimount
     useEffect(() => {
-      fetchWorkshopsFromGooglePlaces();
+      refreshWorkshopData();
     }, []);
 
     // Handle mouse events for dragging
@@ -303,6 +260,11 @@ export default function Chat() {
         document.removeEventListener('mouseup', handleGlobalMouseUp);
       };
     }, [isDragging, dragStart]);
+
+    // Load initial workshop data
+    useEffect(() => {
+      refreshWorkshopData();
+    }, []);
     
     return (
       <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
@@ -311,7 +273,7 @@ export default function Chat() {
             <div className="flex items-center gap-3">
               <h3 className="text-lg font-semibold text-white">🗺️ Peta Bengkel Terdekat</h3>
               <button 
-                onClick={() => fetchWorkshopsFromGooglePlaces()}
+                onClick={refreshWorkshopData}
                 disabled={isLoadingWorkshops}
                 className="px-3 py-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded text-sm hover:from-cyan-400 hover:to-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ring-1 ring-white/20"
               >
@@ -329,69 +291,25 @@ export default function Chat() {
           {/* Status and Error Messages */}
           <div className="px-4 py-2 border-b border-cyan-500/20 bg-slate-800/50">
             <p className="text-sm text-cyan-300/80">
-              {isLoadingWorkshops ? '🔄 Mengambil data bengkel dari Google Maps...' : '💡 Klik marker untuk melihat detail bengkel'}
+              {isLoadingWorkshops ? '🔄 Memuat data bengkel...' : ''}
             </p>
-            {/* Removed error display - always show dummy data seamlessly */}
+            
           </div>
           
           <div className="flex flex-col lg:flex-row h-[500px] lg:h-[600px]">
             {/* Map Area */}
             <div className="flex-1 bg-gradient-to-br from-blue-100 to-green-100 relative overflow-hidden">
-              {/* Google Maps Embed */}
+              {/* OpenStreetMap */}
               <div className="w-full h-full relative">
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d31731.02663282229!2d106.79249!3d-6.2088!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f3e945e34b9d%3A0x5371bf0fdad786a2!2sJakarta%2C%20Daerah%20Khusus%20Ibukota%20Jakarta!5e0!3m2!1sen!2sid!4v1699999999999!5m2!1sen!2sid"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen=""
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  className="absolute inset-0"
-                ></iframe>
-                
-                {/* Custom Markers Overlay */}
-                <div className="absolute inset-0 pointer-events-none">
-                  {bengkelData.map((bengkel, index) => (
-                    <div
-                      key={bengkel.id}
-                      className="absolute cursor-pointer transform -translate-x-1/2 -translate-y-1/2 hover:scale-110 transition-transform z-20 pointer-events-auto"
-                      style={{
-                        left: `${bengkel.position.x}%`,
-                        top: `${bengkel.position.y}%`
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedBengkel(bengkel);
-                      }}
-                    >
-                      <div className={`relative ${
-                        selectedBengkel?.id === bengkel.id ? 'animate-pulse' : 'animate-bounce'
-                      }`}>
-                        <div className={`${
-                          selectedBengkel?.id === bengkel.id 
-                            ? 'bg-green-500 ring-4 ring-green-200 scale-125' 
-                            : index === 0 ? 'bg-red-500' : index === 1 ? 'bg-blue-500' : 'bg-purple-500'
-                        } text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-xl transition-all duration-200 border-3 border-white`}>
-                          🏪
-                        </div>
-                        {/* Marker Label */}
-                        <div className="absolute top-14 left-1/2 transform -translate-x-1/2 backdrop-blur-xl bg-gradient-to-br from-slate-800/90 via-slate-700/80 to-slate-800/90 px-3 py-2 rounded-lg text-sm font-medium shadow-xl whitespace-nowrap border border-cyan-400/30 ring-1 ring-white/20">
-                          <div className="font-bold text-white">{bengkel.name}</div>
-                          <div className="text-cyan-300/80 text-xs">{bengkel.distance}</div>
-                          <div className="flex items-center mt-1">
-                            <span className="text-yellow-400 text-xs">⭐</span>
-                            <span className="text-xs ml-1 font-medium text-white">{bengkel.rating}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <OpenStreetMap 
+                  workshops={bengkelData}
+                  onMarkerClick={setSelectedBengkel}
+                  className="rounded-lg"
+                />
                 
                 {/* Map Controls Overlay */}
                 <div className="absolute top-4 right-4 z-30 backdrop-blur-xl bg-gradient-to-br from-slate-800/80 via-slate-700/60 to-slate-800/80 rounded-lg shadow-lg p-3 border border-cyan-400/30 ring-1 ring-white/20">
-                  <div className="text-sm font-bold text-white mb-2">🗺️ Google Maps</div>
+                  <div className="text-sm font-bold text-white mb-2">🗺️ OpenStreetMap</div>
                   <div className="text-xs text-cyan-300/80">Klik marker untuk detail</div>
                 </div>
                 
@@ -566,12 +484,7 @@ export default function Chat() {
     );
   };
 
-  const quickActions = [
-    { text: 'Booking Bengkel', action: 'booking' },
-    { text: 'Lihat Estimasi Biaya', action: 'estimate' },
-    { text: 'Ulangi Diagnosa', action: 'restart' },
-    { text: 'Riwayat Chat', action: 'history' }
-  ];
+  // Quick actions removed as per requirements
 
   // Enhanced auto scroll with animation timing
   const scrollToBottom = () => {
@@ -590,9 +503,8 @@ export default function Chat() {
     setMessages([{
       id: 1,
       type: 'bot',
-      content: 'Halo! Saya BengkelAI, asisten AI untuk motor Anda. Ceritakan masalah yang dialami motor Anda, dan saya akan membantu mendiagnosa serta memberikan solusi terbaik. 🚲⚡\n\n🔄 **Status:** Real-time AI Analysis Ready',
+      content: 'Halo! Saya BengkelAI, asisten AI untuk motor Anda. Ceritakan masalah yang dialami motor Anda, dan saya akan membantu mendiagnosa serta memberikan solusi terbaik. (Status: Real-time AI Analysis Ready)',
       timestamp: new Date(),
-      source: 'BengkelAI v1.0',
       urgency: 'low',
       category: 'system'
     }]);
@@ -776,21 +688,9 @@ export default function Chat() {
       <header className="backdrop-blur-xl bg-gradient-to-r from-slate-900/80 via-slate-800/60 to-slate-900/80 border-b border-cyan-500/20 px-3 sm:px-4 py-3 sm:py-4 relative z-10 ring-1 ring-white/10">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center flex-1 min-w-0">
-            <Link to="/" className="flex items-center mr-3 sm:mr-6 hover:opacity-80 transition-opacity flex-shrink-0">
-              <img 
-                src="/32x32.svg" 
-                alt="BengkelAI Logo" 
-                className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3"
-                width="32"
-                height="32"
-              />
-              <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">BengkelAI</span>
+            <Link to="/dashboard" className="text-cyan-400 hover:text-cyan-300 transition-colors duration-200 text-sm sm:text-base font-medium mr-3 sm:mr-6">
+              Dashboard
             </Link>
-            <nav className="hidden md:flex items-center space-x-4">
-              <a href="/dashboard" className="text-cyan-300 hover:text-cyan-100 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-white/10">
-                Dashboard
-              </a>
-            </nav>
             <div className="flex items-center min-w-0 flex-1">
               <div className={`w-2 h-2 rounded-full mr-2 flex-shrink-0 ${
                 isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'
@@ -800,7 +700,6 @@ export default function Chat() {
               </span>
               {isTyping && (
                 <span className="ml-2 sm:ml-3 text-xs text-blue-600 flex items-center flex-shrink-0">
-                  <span className="mr-1">🤖</span>
                   <span className="hidden sm:inline">Analyzing{typingDots}</span>
                   <span className="sm:hidden">AI{typingDots}</span>
                 </span>
@@ -819,7 +718,7 @@ export default function Chat() {
         {/* Messages Area - Scrollable */}
         <div 
           ref={messagesScrollRef}
-          className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-4 pt-4 sm:pt-6 space-y-3 sm:space-y-4 scrollbar-thin scrollbar-thumb-cyan-500/20 scrollbar-track-transparent"
+          className="flex-1 overflow-y-auto overflow-x-hidden hide-scrollbar px-3 sm:px-4 pt-4 sm:pt-6 space-y-3 sm:space-y-4 scrollbar-thin scrollbar-thumb-cyan-500/20 scrollbar-track-transparent"
           style={{
             height: 'calc(100dvh - 0px)',
             paddingBottom: `calc(${footerH}px + env(safe-area-inset-bottom, 0px))`
@@ -883,31 +782,9 @@ export default function Chat() {
                 } ${
                   animatingMessages.has(message.id) ? 'ring-2 ring-cyan-400/50 ring-offset-2 ring-offset-slate-900' : ''
                 }`}>
-                  {message.type === 'bot' && (
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center">
-                        <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-teal-600 rounded-full flex items-center justify-center mr-2">
-                          <span className="text-white text-xs font-bold">AI</span>
-                        </div>
-                        {message.source && (
-                          <span className="text-xs text-cyan-300/80">{message.source}</span>
-                        )}
-                      </div>
-                      {message.urgency && (
-                        <div className="flex items-center gap-1">
-                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getUrgencyBadge(message.urgency).color}`}>
-                            {getUrgencyBadge(message.urgency).text}
-                          </span>
-                          {message.category && (
-                            <span className="px-2 py-1 bg-slate-700/50 text-cyan-300 rounded-full text-xs capitalize border border-cyan-500/20">
-                              {message.category}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap group-hover:text-white transition-colors duration-200">{renderFormattedText(message.content)}</p>
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap group-hover:text-white transition-colors duration-200">
+                    {renderFormattedText(message.content + (message.urgency && message.urgency !== 'low' ? ` (Prioritas: ${message.urgency === 'high' ? 'Tinggi' : message.urgency === 'critical' ? 'Kritis' : 'Sedang'})` : ''))}
+                  </p>
                   
                   {/* Message glow effect for bot messages */}
                   {message.type === 'bot' && animatingMessages.has(message.id) && (
@@ -932,11 +809,6 @@ export default function Chat() {
                       }`} />
                       {message.timestamp.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                     </span>
-                    {message.source && (
-                      <span className="text-cyan-300 font-medium px-2 py-1 bg-cyan-400/10 rounded-full border border-cyan-400/20">
-                        {message.source}
-                      </span>
-                    )}
                   </div>
                 </div>
               </div>
@@ -948,9 +820,6 @@ export default function Chat() {
             <div className="flex justify-start">
               <div className="bg-gradient-to-br from-slate-800/60 via-slate-700/40 to-slate-800/60 border border-cyan-400/30 rounded-2xl rounded-bl-md px-4 py-3 shadow-lg backdrop-blur-xl ring-1 ring-white/10">
                 <div className="flex items-center space-x-2">
-                  <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-teal-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">AI</span>
-                  </div>
                   <div className="flex items-center space-x-1">
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
@@ -974,74 +843,86 @@ export default function Chat() {
 
         {/* Sticky Bottom Section - Quick Actions, Suggestions, and Input */}
         <div ref={footerRef} className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900 via-slate-900/95 to-slate-900/90 backdrop-blur-xl border-t border-cyan-500/20 ring-1 ring-white/10 z-50">
-          <div className="max-w-4xl mx-auto">
-          {/* Quick Actions */}
-          <div className="px-3 sm:px-4 py-2 border-b border-cyan-500/10">
-            <div className="flex flex-wrap gap-1 sm:gap-2 justify-center mb-2">
-              {quickActions.map((action, index) => (
-                <button
-                   key={index}
-                   onClick={() => handleQuickAction(action.action)}
-                   className="backdrop-blur-xl bg-slate-800/40 hover:bg-slate-700/60 text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm border border-cyan-500/20 transition-all duration-200 hover:border-cyan-400/40 hover:shadow-lg ring-1 ring-white/10"
-                >
-                  <span className="hidden sm:inline">{action.text}</span>
-                  <span className="sm:hidden">{action.text.split(' ')[0]}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+            <div className="max-w-4xl mx-auto">
 
-          {/* Quick Suggestions - Collapsible on mobile */}
-          <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-cyan-500/10">
-            <p className="text-xs text-cyan-300/80 mb-2">Coba tanyakan masalah motor Anda:</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1 sm:gap-2 mb-2">
-              {[
-                { text: 'Motor susah hidup', query: 'susah hidup', category: 'Starter' },
-                { text: 'Asap putih keluar', query: 'asap putih', category: 'Mesin' },
-                { text: 'Rem tidak pakem', query: 'rem blong', category: 'Rem' },
-                { text: 'Oli bocor', query: 'oli bocor', category: 'Pelumasan' },
-                { text: 'Mesin kasar', query: 'mesin kasar', category: 'Mesin' },
-                { text: 'Gigi susah masuk', query: 'gigi susah masuk', category: 'Transmisi' }
-              ].map((suggestion) => (
+          {/* Quick Suggestions */}
+          {showQuickActions && (
+            <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-cyan-500/10">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs text-cyan-300/80">Coba tanyakan masalah motor Anda:</p>
                 <button
-                  key={suggestion.query}
-                  onClick={() => {
-                    setInputMessage(suggestion.query);
-                    setTimeout(() => handleSendMessage(), 100);
-                  }}
-                  className="px-2 sm:px-3 py-1.5 sm:py-2 backdrop-blur-xl bg-slate-800/40 border border-cyan-500/20 rounded-lg text-xs text-white hover:bg-slate-700/60 hover:border-cyan-400/40 transition-all duration-200 hover:shadow-lg text-center ring-1 ring-white/10"
+                  onClick={() => setShowQuickActions(false)}
+                  className="text-xs text-cyan-300/60 hover:text-cyan-300 transition-colors duration-200 px-2 py-1 rounded hover:bg-slate-700/30"
                 >
-                  <div className="font-medium text-xs sm:text-sm">{suggestion.text}</div>
-                  <div className="text-cyan-300/60 text-xs mt-1 hidden sm:block">{suggestion.category}</div>
-                </button>
-              ))}
-            </div>
-            
-            {/* Emergency Actions */}
-            <div className="border-t border-cyan-500/10 pt-2">
-              <p className="text-xs text-red-400 mb-2">Darurat:</p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setInputMessage('rem blong');
-                    setTimeout(() => handleSendMessage(), 100);
-                  }}
-                  className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 backdrop-blur-xl bg-red-900/40 text-red-300 rounded-lg text-xs font-medium hover:bg-red-800/60 transition-all duration-200 border border-red-500/30 ring-1 ring-white/10"
-                >
-                  Rem Bermasalah
-                </button>
-                <button
-                  onClick={() => {
-                    setInputMessage('oli habis');
-                    setTimeout(() => handleSendMessage(), 100);
-                  }}
-                  className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 backdrop-blur-xl bg-orange-900/40 text-orange-300 rounded-lg text-xs font-medium hover:bg-orange-800/60 transition-all duration-200 border border-orange-500/30 ring-1 ring-white/10"
-                >
-                  Oli Habis
+                  Sembunyikan
                 </button>
               </div>
+              {/* Desktop/Tablet Layout - Grid */}
+              <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-2">
+                 {[
+                   { text: 'Motor susah hidup', query: 'susah hidup', category: 'Starter' },
+                   { text: 'Asap putih keluar', query: 'asap putih', category: 'Mesin' },
+                   { text: 'Rem tidak pakem', query: 'rem blong', category: 'Rem' },
+                   { text: 'Oli bocor', query: 'oli bocor', category: 'Pelumasan' },
+                   { text: 'Mesin kasar', query: 'mesin kasar', category: 'Mesin' },
+                   { text: 'Gigi susah masuk', query: 'gigi susah masuk', category: 'Transmisi' }
+                 ].map((suggestion) => (
+                   <button
+                     key={suggestion.query}
+                     onClick={() => {
+                       setInputMessage(suggestion.query);
+                       setTimeout(() => handleSendMessage(), 100);
+                     }}
+                     className="px-3 sm:px-4 py-2 sm:py-3 backdrop-blur-xl bg-slate-800/40 border border-cyan-500/20 rounded-lg text-xs sm:text-sm text-white hover:bg-slate-700/60 hover:border-cyan-400/40 transition-all duration-200 hover:shadow-lg text-center ring-1 ring-white/10 hover:scale-[1.02]"
+                   >
+                     <div className="font-medium">{suggestion.text}</div>
+                     <div className="text-cyan-300/60 text-xs mt-1">{suggestion.category}</div>
+                   </button>
+                 ))}
+              </div>
+              
+              {/* Mobile Layout - Vertical Stack */}
+              <div className="md:hidden space-y-2 mb-2">
+                 {[
+                   { text: 'Motor susah hidup', query: 'susah hidup', category: 'Starter' },
+                   { text: 'Asap putih keluar', query: 'asap putih', category: 'Mesin' },
+                   { text: 'Rem tidak pakem', query: 'rem blong', category: 'Rem' },
+                   { text: 'Oli bocor', query: 'oli bocor', category: 'Pelumasan' },
+                   { text: 'Mesin kasar', query: 'mesin kasar', category: 'Mesin' },
+                   { text: 'Gigi susah masuk', query: 'gigi susah masuk', category: 'Transmisi' }
+                 ].map((suggestion) => (
+                   <button
+                     key={suggestion.query}
+                     onClick={() => {
+                       setInputMessage(suggestion.query);
+                       setTimeout(() => handleSendMessage(), 100);
+                     }}
+                     className="w-full px-4 py-3 backdrop-blur-xl bg-slate-800/40 border border-cyan-500/20 rounded-lg text-sm text-white hover:bg-slate-700/60 hover:border-cyan-400/40 transition-all duration-200 hover:shadow-lg text-left ring-1 ring-white/10 hover:scale-[1.02]"
+                   >
+                     <div className="flex justify-between items-center">
+                       <div className="font-medium">{suggestion.text}</div>
+                       <div className="text-cyan-300/60 text-xs">{suggestion.category}</div>
+                     </div>
+                   </button>
+                 ))}
+              </div>
             </div>
-          </div>
+          )}
+          
+          {/* Show Quick Actions Button when hidden */}
+          {!showQuickActions && (
+            <div className="px-3 sm:px-4 py-2 border-b border-cyan-500/10">
+              <button
+                onClick={() => setShowQuickActions(true)}
+                className="text-xs text-cyan-300/60 hover:text-cyan-300 transition-colors duration-200 px-2 py-1 rounded hover:bg-slate-700/30 flex items-center gap-1"
+              >
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+                Tampilkan pertanyaan cepat
+              </button>
+            </div>
+          )}
 
           {/* Input Area */}
           <div className="px-3 sm:px-4 py-3 sm:py-4">
@@ -1053,9 +934,9 @@ export default function Chat() {
                 onChange={onInputChange}
                 onKeyPress={handleKeyPress}
                 placeholder="Ketik gejala motor Anda..."
-                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 backdrop-blur-xl bg-slate-800/40 border border-cyan-500/30 rounded-2xl focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400/50 resize-none text-sm text-white placeholder-white/60 ring-1 ring-white/10"
-                rows={1}
-                style={{ minHeight: '44px', maxHeight: '140px' }}
+                className="w-full px-4 sm:px-5 py-4 sm:py-5 backdrop-blur-xl bg-slate-800/40 border border-cyan-500/30 rounded-2xl focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400/50 resize-none text-base sm:text-lg text-white placeholder-white/60 ring-1 ring-white/10"
+                rows={2}
+                style={{ minHeight: '80px', maxHeight: '200px' }}
                 disabled={isLoading}
               />
             </div>

@@ -1,0 +1,106 @@
+/* Leaflet CSS */
+@import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
+
+/* Custom styles for Leaflet map */
+.leaflet-container {
+  height: 400px !important;
+  width: 100% !important;
+  border-radius: 8px;
+  z-index: 1;
+  background-color: #1e293b;
+  overflow: hidden;
+  position: relative;
+}
+
+.leaflet-map-container {
+  height: 400px !important;
+  width: 100% !important;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  display: block;
+}
+
+/* Ensure tiles load properly */
+.leaflet-tile-container {
+  transform: none !important;
+  overflow: visible !important;
+}
+
+.leaflet-tile {
+  image-rendering: auto;
+  image-rendering: crisp-edges;
+  image-rendering: -webkit-optimize-contrast;
+  max-width: none !important;
+  max-height: none !important;
+  width: 256px !important;
+  height: 256px !important;
+}
+
+.leaflet-tile-pane {
+  overflow: visible !important;
+}
+
+.leaflet-map-pane {
+  overflow: visible !important;
+}
+
+/* Dark theme adjustments */
+.leaflet-control-container {
+  filter: none;
+}
+
+.leaflet-popup-content-wrapper {
+  background-color: #1e293b;
+  color: white;
+  border-radius: 8px;
+}
+
+.leaflet-popup-tip {
+  background-color: #1e293b;
+}
+
+.leaflet-popup-close-button {
+  color: white;
+}
+
+.leaflet-popup-close-button:hover {
+  color: #3b82f6;
+}
+
+/* Custom marker styles */
+.user-location-marker {
+  background: transparent;
+  border: none;
+}
+
+.workshop-marker {
+  background: transparent;
+  border: none;
+}
+
+/* Ensure controls are visible */
+.leaflet-control-zoom {
+  background-color: rgba(30, 41, 59, 0.9) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.leaflet-control-zoom a {
+  background-color: rgba(30, 41, 59, 0.9) !important;
+  color: white !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background-color: rgba(59, 130, 246, 0.8) !important;
+}
+
+.leaflet-control-attribution {
+  background-color: rgba(30, 41, 59, 0.8) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.leaflet-control-attribution a {
+  color: #3b82f6 !important;
+}
