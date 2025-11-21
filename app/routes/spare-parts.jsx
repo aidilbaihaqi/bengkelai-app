@@ -198,6 +198,7 @@ export default function SpareParts() {
   const [sortBy, setSortBy] = useState('popular');
   const [cart, setCart] = useState([]);
   const [showCart, setShowCart] = useState(false);
+  const [customItems, setCustomItems] = useState([]);
   
   // Refs for focus management
   const cartModalRef = useRef(null);
@@ -263,6 +264,13 @@ export default function SpareParts() {
     }
   }, [showCart]);
 
+  useEffect(() => {
+    try {
+      const items = JSON.parse(localStorage.getItem('bengkelMarketplaceItems') || '[]');
+      setCustomItems(items);
+    } catch {}
+  }, []);
+
   const categories = [
     { key: 'semua', label: 'Semua Kategori', icon: '🛍️' },
     { key: 'mesin', label: 'Mesin', icon: '🔧' },
@@ -275,14 +283,30 @@ export default function SpareParts() {
 
   // Get all products
   const getAllProducts = () => {
-    return Object.values(sparePartsData).flat();
+    const base = Object.values(sparePartsData).flat();
+    const mappedCustom = customItems.map(ci => ({
+      id: ci.id,
+      name: ci.name,
+      brand: ci.brand,
+      price: ci.price,
+      originalPrice: ci.price,
+      image: ci.image || '/images/spare-part/default.jpg',
+      rating: 4.5,
+      reviews: 0,
+      stock: ci.stock || 0,
+      description: ci.description || '',
+      compatibility: ci.compatibility ? ci.compatibility.split(',').map(s=>s.trim()) : [],
+      warranty: ci.warranty || 'Garansi standar',
+      _category: ci.category || 'mesin'
+    }));
+    return base.concat(mappedCustom);
   };
 
   // Filter products
   const getFilteredProducts = () => {
     let products = selectedCategory === 'semua' 
       ? getAllProducts() 
-      : sparePartsData[selectedCategory] || [];
+      : [...(sparePartsData[selectedCategory] || []), ...getAllProducts().filter(p => p._category === selectedCategory)];
 
     // Search filter
     if (searchQuery) {
@@ -354,7 +378,19 @@ export default function SpareParts() {
             
             <nav className="hidden md:flex items-center gap-6" role="navigation" aria-label="Navigasi utama">
               <Link to="/dashboard" className="text-gray-300 hover:text-white transition-colors">
-                Dashboard
+                Dashboard User
+              </Link>
+              <Link to="/workshop-dashboard" className="text-gray-300 hover:text-white transition-colors">
+                Dashboard Bengkel
+              </Link>
+              <Link to="/workshop-logs" className="text-gray-300 hover:text-white transition-colors">
+                Log Bengkel
+              </Link>
+              <Link to="/workshop-stock" className="text-gray-300 hover:text-white transition-colors">
+                Stok Bengkel
+              </Link>
+              <Link to="/workshop-spareparts" className="text-gray-300 hover:text-white transition-colors">
+                Sparepart Bengkel
               </Link>
               <Link to="/chat" className="text-gray-300 hover:text-white transition-colors">
                 Chat AI

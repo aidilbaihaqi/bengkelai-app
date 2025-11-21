@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-const OpenStreetMap = ({ workshops = [], onMarkerClick, onLocationSelect, className = "" }) => {
+const OpenStreetMap = ({ workshops = [], onMarkerClick, onLocationSelect, className = "", center, zoom = 13 }) => {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersRef = useRef([]);
@@ -37,8 +37,8 @@ const OpenStreetMap = ({ workshops = [], onMarkerClick, onLocationSelect, classN
 
         // Buat map baru
         const map = L.map(mapRef.current, {
-          center: [-6.2088, 106.8456], // Jakarta coordinates
-          zoom: 13,
+          center: center ? [center.lat, center.lng] : [-6.2088, 106.8456],
+          zoom: zoom,
           zoomControl: true,
           scrollWheelZoom: true,
           doubleClickZoom: true,
@@ -129,8 +129,10 @@ const OpenStreetMap = ({ workshops = [], onMarkerClick, onLocationSelect, classN
 
         // Tambahkan marker untuk setiap workshop
         workshops.forEach((workshop, index) => {
-          const lat = workshop.lat || (-6.2088 + (Math.random() - 0.5) * 0.05);
-          const lng = workshop.lng || (106.8456 + (Math.random() - 0.5) * 0.05);
+          const fallbackLat = (center?.lat ?? -6.2088) + (Math.random() - 0.5) * 0.05;
+          const fallbackLng = (center?.lng ?? 106.8456) + (Math.random() - 0.5) * 0.05;
+          const lat = workshop.lat ?? fallbackLat;
+          const lng = workshop.lng ?? fallbackLng;
 
           // Buat custom icon berdasarkan warna workshop
           const customIcon = L.divIcon({
@@ -213,7 +215,7 @@ const OpenStreetMap = ({ workshops = [], onMarkerClick, onLocationSelect, classN
         userLocationMarkerRef.current = null;
       }
     };
-  }, [workshops, onMarkerClick, onLocationSelect]);
+  }, [workshops, onMarkerClick, onLocationSelect, center, zoom]);
 
   return (
     <div 

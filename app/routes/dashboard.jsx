@@ -2,9 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "@remix-run/react";
 import LoadingSpinner, { SkeletonLoader, CardSkeleton, ButtonLoading } from "../components/LoadingSpinner";
 import ErrorBoundary from "../components/ErrorBoundary";
-
-// Import Leaflet Map component
-import LeafletMap from "../components/LeafletMap";
+import OpenStreetMap from "../components/OpenStreetMap";
 
 export const meta = () => {
   return [
@@ -425,7 +423,7 @@ export default function Dashboard() {
   const renderOverview = () => (
     <div className="space-y-6">
       {/* Motor Condition Overview */}
-      <div className="bg-gradient-to-br from-slate-800/60 via-slate-700/40 to-slate-800/60 backdrop-blur-xl border border-cyan-500/20 ring-1 ring-white/10 rounded-xl p-6">
+      {false && (<div className="bg-gradient-to-br from-slate-800/60 via-slate-700/40 to-slate-800/60 backdrop-blur-xl border border-cyan-500/20 ring-1 ring-white/10 rounded-xl p-6">)
         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
           <svg className="w-6 h-6 inline mr-2" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12.72 11.47l1.38-.53-.44-1.12-.93.35c-.72-.33-1.54-.52-2.4-.52-.86 0-1.68.19-2.4.52l-.93-.35-.44 1.12 1.38.53c-.48.44-.85.98-1.09 1.59l-1.38-.53-.44 1.12.93.35c-.08.33-.12.68-.12 1.04 0 .36.04.71.12 1.04l-.93.35.44 1.12 1.38-.53c.24.61.61 1.15 1.09 1.59l-1.38.53.44 1.12.93-.35c.72.33 1.54.52 2.4.52.86 0 1.68-.19 2.4-.52l.93.35.44-1.12-1.38-.53c.48-.44.85-.98 1.09-1.59l1.38.53.44-1.12-.93-.35c.08-.33.12-.68.12-1.04 0-.36-.04-.71-.12-1.04l.93-.35-.44-1.12-1.38.53c-.24-.61-.61-1.15-1.09-1.59zM10.33 16.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
@@ -434,43 +432,6 @@ export default function Dashboard() {
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Status Oli */}
-          <div className="md:col-span-1">
-            <h4 className="text-lg font-semibold text-white mb-3">Status Oli Mesin</h4>
-            {Object.entries(motorCondition).map(([key, condition]) => {
-              const componentNames = {
-                oil: 'Oli Mesin'
-              };
-              
-              return (
-                <div key={key} className={`p-4 rounded-lg border backdrop-blur-sm ${getStatusColor(condition.status)}`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium">{componentNames[key]}</span>
-                    <span className="text-sm opacity-80">{condition.percentage}%</span>
-                  </div>
-                  <div className="w-full bg-slate-700/50 rounded-full h-2 mb-2">
-                    <div 
-                      className={`h-2 rounded-full transition-all duration-500 ${
-                        condition.status === 'good' ? 'bg-green-500' :
-                        condition.status === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
-                      }`}
-                      style={{ width: `${condition.percentage}%` }}
-                    />
-                  </div>
-                  <p className="text-xs opacity-70">Cek terakhir: {condition.lastCheck}</p>
-                  {condition.status === 'critical' && (
-                    <button 
-                      ref={oilModalTriggerRef}
-                      onClick={() => setShowOilModal(true)}
-                      className="mt-2 w-full bg-red-500 hover:bg-red-600 text-white py-2 px-3 rounded text-sm font-medium transition-colors"
-                    >
-                      ⚠️ Segera Ganti Oli!
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
 
           {/* Tips Perawatan Motor */}
           <div className="md:col-span-1">
@@ -513,7 +474,7 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      </div>
+      </div>)}
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -543,18 +504,20 @@ export default function Dashboard() {
           <p className="text-sm text-gray-300">Estimasi harga suku cadang</p>
         </Link>
         
-        <button 
-          onClick={() => setActiveTab('reminder')}
+        <Link 
+          to="/workshop-dashboard"
           className="bg-gradient-to-br from-orange-600/20 to-red-600/20 border border-orange-500/30 rounded-xl p-6 text-left hover:from-orange-600/30 hover:to-red-600/30 transition-all duration-200 group"
         >
           <div className="mb-2 group-hover:scale-110 transition-transform">
             <svg className="w-8 h-8 text-orange-400" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 6c-.55 0-1 .45-1 1v3.5c0 .28.11.53.29.71l2.5 2.5c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L13 11.59V9c0-.55-.45-1-1z"/>
+              <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-3.866 0-7 3.134-7 7h14c0-3.866-3.134-7-7-7z"/>
             </svg>
           </div>
-          <h4 className="font-semibold text-white mb-1">Reminder</h4>
-          <p className="text-sm text-gray-200">Jadwal perawatan motor</p>
-        </button>
+          <h4 className="font-semibold text-white mb-1">Dashboard Bengkel</h4>
+          <p className="text-sm text-gray-300">Kelola log & stok bengkel</p>
+        </Link>
+        
+        
         
         <Link 
           to="/chat"
@@ -572,7 +535,7 @@ export default function Dashboard() {
       </div>
 
       {/* Recent Service Reminders */}
-      <div className="bg-gradient-to-br from-slate-800/60 via-slate-700/40 to-slate-800/60 backdrop-blur-xl border border-cyan-500/20 ring-1 ring-white/10 rounded-xl p-6">
+      <div className="hidden bg-gradient-to-br from-slate-800/60 via-slate-700/40 to-slate-800/60 backdrop-blur-xl border border-cyan-500/20 ring-1 ring-white/10 rounded-xl p-6">
         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
           <svg className="w-6 h-6 text-cyan-400" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 6c-.55 0-1 .45-1 1v3.5c0 .28.11.53.29.71l2.5 2.5c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L13 11.59V9c0-.55-.45-1-1-1z"/>
@@ -600,145 +563,137 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Oil Change Modal */}
-      {showOilModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4" onClick={() => setShowOilModal(false)}>
-          <div ref={oilModalRef} className="bg-slate-900 rounded-2xl border border-red-500/30 w-full max-w-md overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="bg-gradient-to-r from-red-500/20 to-orange-500/20 p-6 border-b border-red-500/30 relative">
-              <button 
-                ref={oilModalFirstFocusableRef}
-                onClick={() => setShowOilModal(false)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    setShowOilModal(false);
-                  }
-                }}
-                className="absolute top-4 right-4 text-gray-400 hover:text-white focus:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-slate-900 rounded transition-colors"
-                aria-label="Close modal"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center">
-                  <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-white">Peringatan Oli Mesin!</h3>
-                  <p className="text-red-300 text-sm">Segera ganti oli motor Anda</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="p-6">
-              <div className="mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <svg className="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10"/>
-                  </svg>
-                  <p className="text-white"><strong>Status:</strong> Oli sudah habis (overdue 2 hari)</p>
-                </div>
-                <div className="flex items-center gap-2 mb-2">
-                  <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/>
-                  </svg>
-                  <p className="text-gray-300"><strong>Kondisi:</strong> 25% tersisa (kritis)</p>
-                </div>
-                <div className="flex items-center gap-2 mb-4">
-                  <svg className="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M9 11H7v6h2v-6zm4 0h-2v6h2v-6zm4 0h-2v6h2v-6zm2.5-9H18V1h-2v1H8V1H6v1H4.5C3.67 2 3 2.67 3 3.5v15C3 19.33 3.67 20 4.5 20h15c.83 0 1.5-.67 1.5-1.5v-15C21 2.67 20.33 2 19.5 2z"/>
-                  </svg>
-                  <p className="text-gray-200"><strong>Terakhir ganti:</strong> 5 Januari 2024</p>
-                </div>
-                
-                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-4">
-                  <div className="flex items-start gap-2">
-                    <svg className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
-                    </svg>
-                    <p className="text-red-300 text-sm">
-                      Berkendara dengan oli yang sudah habis dapat merusak mesin motor Anda secara permanen!
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex gap-3">
-                <button 
-                  onClick={() => {
-                    console.log('Button Cari Bengkel diklik!');
-                    setShowOilModal(false);
-                    setActiveTab('workshop-finder');
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      console.log('Button Cari Bengkel diklik!');
-                      setShowOilModal(false);
-                      setActiveTab('workshop-finder');
-                    }
-                  }}
-                  className="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white py-3 px-4 rounded-lg hover:from-red-400 hover:to-red-500 focus:from-red-400 focus:to-red-500 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all duration-200 font-semibold flex items-center justify-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-                  </svg>
-                  Cari Bengkel
-                </button>
-                <button 
-                  ref={oilModalLastFocusableRef}
-                  onClick={() => {
-                    console.log('Button Nanti diklik!');
-                    setShowOilModal(false);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      console.log('Button Nanti diklik!');
-                      setShowOilModal(false);
-                    }
-                  }}
-                  className="px-6 py-3 bg-slate-700 text-gray-300 rounded-lg hover:bg-slate-600 focus:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition-colors font-medium"
-                >
-                  Nanti
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      
     </div>
   );
 
 
 
   const renderWorkshopFinder = () => {
-
-      return (
+    const kijangCenter = { lat: 0.9000, lng: 104.6333 };
+    const kijangWorkshops = [
+      { id: 1, name: "Bengkel Jaya Motor Kijang", address: "Kijang, Bintan", phone: "0771-111-222", rating: 4.5, services: ["Service Rutin", "Ganti Oli", "Tune Up"], price: "Rp 50-150k", lat: 0.9040, lng: 104.6373, distance: "0.7 km" },
+      { id: 2, name: "Honda AHASS Kijang", address: "Kijang, Bintan", phone: "0771-333-444", rating: 4.8, services: ["Service Resmi", "Spare Part Original"], price: "Rp 100-300k", lat: 0.8960, lng: 104.6413, distance: "1.2 km" },
+      { id: 3, name: "Yamaha Service Center Bintan", address: "Kijang, Bintan", phone: "0771-555-666", rating: 4.6, services: ["Tune Up", "Injeksi Cleaning"], price: "Rp 75-250k", lat: 0.9055, lng: 104.6268, distance: "1.6 km" }
+    ];
+    return (
       <div className="space-y-6">
         <div className="bg-gradient-to-br from-slate-800/60 via-slate-700/40 to-slate-800/60 backdrop-blur-xl border border-cyan-500/20 ring-1 ring-white/10 rounded-xl p-6">
-          <div className="flex items-center justify-center min-h-[500px]">
-            <div className="text-center max-w-md">
-              <div className="text-6xl mb-6">🚧</div>
-              <h3 className="text-2xl font-bold text-white mb-3">
-                Fitur Workshop Finder
-              </h3>
-              <p className="text-cyan-400 text-lg mb-4 font-medium">
-                Sedang dalam pengembangan
-              </p>
-              <p className="text-slate-400 text-sm leading-relaxed mb-6">
-                Kami sedang mengembangkan fitur pencarian bengkel terdekat dengan peta interaktif. 
-                Fitur ini akan segera tersedia untuk membantu Anda menemukan bengkel terpercaya di sekitar lokasi Anda.
-              </p>
-              <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-slate-700/50 to-slate-600/50 border border-slate-500/30 rounded-lg">
-                <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></div>
-                <span className="text-slate-300 text-sm font-medium">Coming Soon</span>
+          <div className="flex flex-col lg:flex-row h-[500px] lg:h-[600px]">
+            <div className="flex-1 relative overflow-hidden">
+              <OpenStreetMap workshops={kijangWorkshops} onMarkerClick={() => {}} className="rounded-lg" center={kijangCenter} />
+              <div className="absolute top-4 right-4 z-30 backdrop-blur-xl bg-gradient-to-br from-slate-800/80 via-slate-700/60 to-slate-800/80 rounded-lg shadow-lg p-3 border border-cyan-400/30 ring-1 ring-white/20">
+                <div className="text-sm font-bold text-white mb-1">🗺️ Peta Kijang, Bintan</div>
+                <div className="text-xs text-cyan-300/80">Klik marker untuk detail bengkel</div>
               </div>
             </div>
+            <div className="w-full lg:w-96 border-l border-cyan-500/20 overflow-y-auto bg-slate-800/30">
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-semibold text-white">📋 Daftar Bengkel</h4>
+                  <span className="text-xs text-cyan-300/80">{kijangWorkshops.length} bengkel</span>
+                </div>
+                {kijangWorkshops.map((b, i) => (
+                  <div key={b.id} className="p-3 border rounded-lg mb-2 bg-slate-700/30 border-slate-600/50 hover:bg-slate-600/40 hover:border-cyan-500/30 transition-all duration-200">
+                    <div className="flex justify-between items-start mb-1">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-3 h-3 rounded-full ${i === 0 ? 'bg-red-500' : i === 1 ? 'bg-blue-500' : 'bg-purple-500'}`}></div>
+                        <h5 className="font-medium text-sm text-white">{b.name}</h5>
+                      </div>
+                      <span className="text-xs text-cyan-300/80 font-medium">{b.distance}</span>
+                    </div>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center">
+                        <span className="text-yellow-400 text-sm">⭐</span>
+                        <span className="text-xs text-gray-300 ml-1 font-medium">{b.rating}</span>
+                      </div>
+                      <span className="text-xs text-green-400 font-medium">{b.price}</span>
+                    </div>
+                    <div className="mt-2 text-xs text-gray-300">
+                      <p className="flex items-start gap-2"><span>📍</span><span>{b.address}</span></p>
+                      <p className="flex items-center gap-2"><span>📞</span><span>{b.phone}</span></p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderWorkshopUser = () => {
+    const [workshopLogs, setWorkshopLogs] = React.useState([]);
+    const [inventoryItems, setInventoryItems] = React.useState([]);
+    const [newLog, setNewLog] = React.useState({ tanggal: '', plat: '', merk: '', model: '', keluhan: '', status: 'Masuk' });
+    const [newItem, setNewItem] = React.useState({ nama: '', stok: 0, harga: 0, satuan: 'pcs' });
+    const addLog = () => {
+      if (!newLog.plat || !newLog.merk) return;
+      setWorkshopLogs([{ id: Date.now(), ...newLog }, ...workshopLogs]);
+      setNewLog({ tanggal: '', plat: '', merk: '', model: '', keluhan: '', status: 'Masuk' });
+    };
+    const addItem = () => {
+      if (!newItem.nama) return;
+      setInventoryItems([{ id: Date.now(), ...newItem }, ...inventoryItems]);
+      setNewItem({ nama: '', stok: 0, harga: 0, satuan: 'pcs' });
+    };
+    const removeItem = (id) => setInventoryItems(inventoryItems.filter((x) => x.id !== id));
+    const updateLogStatus = (id, status) => setWorkshopLogs(workshopLogs.map(l => l.id === id ? { ...l, status } : l));
+    return (
+      <div className="space-y-6">
+        <div className="bg-gradient-to-br from-slate-800/60 via-slate-700/40 to-slate-800/60 backdrop-blur-xl border border-cyan-500/20 ring-1 ring-white/10 rounded-xl p-6">
+          <h3 className="text-xl font-bold text-white mb-4">🛠️ Log Motor Masuk</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+            <input value={newLog.tanggal} onChange={(e)=>setNewLog({...newLog,tanggal:e.target.value})} type="date" className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white" />
+            <input value={newLog.plat} onChange={(e)=>setNewLog({...newLog,plat:e.target.value})} placeholder="Plat Nomor" className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white" />
+            <input value={newLog.merk} onChange={(e)=>setNewLog({...newLog,merk:e.target.value})} placeholder="Merk" className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white" />
+            <input value={newLog.model} onChange={(e)=>setNewLog({...newLog,model:e.target.value})} placeholder="Model" className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white" />
+            <input value={newLog.keluhan} onChange={(e)=>setNewLog({...newLog,keluhan:e.target.value})} placeholder="Keluhan" className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white md:col-span-2" />
+            <select value={newLog.status} onChange={(e)=>setNewLog({...newLog,status:e.target.value})} className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white">
+              <option>Masuk</option>
+              <option>Proses</option>
+              <option>Selesai</option>
+            </select>
+          </div>
+          <button onClick={addLog} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-4 py-2 rounded-lg">Tambah Log</button>
+          <div className="mt-4 space-y-2">
+            {workshopLogs.length === 0 ? (
+              <div className="text-gray-300">Belum ada log</div>
+            ) : workshopLogs.map(l => (
+              <div key={l.id} className="p-3 bg-slate-700/30 border border-slate-600/50 rounded-lg">
+                <div className="flex justify-between text-sm text-white"><span>{l.tanggal} • {l.plat} • {l.merk} {l.model}</span><span className="text-cyan-300">{l.status}</span></div>
+                <div className="text-xs text-gray-300">Keluhan: {l.keluhan}</div>
+                <div className="mt-2 flex gap-2">
+                  <button onClick={()=>updateLogStatus(l.id,'Proses')} className="px-2 py-1 bg-yellow-500 text-white rounded">Proses</button>
+                  <button onClick={()=>updateLogStatus(l.id,'Selesai')} className="px-2 py-1 bg-green-600 text-white rounded">Selesai</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="bg-gradient-to-br from-slate-800/60 via-slate-700/40 to-slate-800/60 backdrop-blur-xl border border-cyan-500/20 ring-1 ring-white/10 rounded-xl p-6">
+          <h3 className="text-xl font-bold text-white mb-4">📦 Pencatatan Barang</h3>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+            <input value={newItem.nama} onChange={(e)=>setNewItem({...newItem,nama:e.target.value})} placeholder="Nama Barang" className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white md:col-span-2" />
+            <input value={newItem.stok} onChange={(e)=>setNewItem({...newItem,stok:parseInt(e.target.value||'0')})} type="number" placeholder="Stok" className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white" />
+            <input value={newItem.harga} onChange={(e)=>setNewItem({...newItem,harga:parseInt(e.target.value||'0')})} type="number" placeholder="Harga" className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white" />
+            <select value={newItem.satuan} onChange={(e)=>setNewItem({...newItem,satuan:e.target.value})} className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white">
+              <option>pcs</option>
+              <option>liter</option>
+              <option>set</option>
+            </select>
+          </div>
+          <button onClick={addItem} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-4 py-2 rounded-lg">Tambah Barang</button>
+          <div className="mt-4 space-y-2">
+            {inventoryItems.length === 0 ? (
+              <div className="text-gray-300">Belum ada barang</div>
+            ) : inventoryItems.map(i => (
+              <div key={i.id} className="p-3 bg-slate-700/30 border border-slate-600/50 rounded-lg flex justify-between items-center">
+                <div className="text-sm text-white">{i.nama} • {i.stok} {i.satuan} • Rp {i.harga.toLocaleString()}</div>
+                <button onClick={()=>removeItem(i.id)} className="px-2 py-1 bg-red-500 text-white rounded">Hapus</button>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -1672,11 +1627,6 @@ export default function Dashboard() {
               icon: <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
             },
             { 
-              id: 'reminder', 
-              label: 'Reminder', 
-              icon: <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 6c-.55 0-1 .45-1 1v3.5c0 .28.11.53.29.71l2.5 2.5c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L13 11.59V9c0-.55-.45-1-1z"/></svg>
-            },
-            { 
               id: 'spare-parts', 
               label: 'Spare Parts', 
               icon: <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>
@@ -1720,11 +1670,7 @@ export default function Dashboard() {
             </ErrorBoundary>
           )}
           
-          {activeTab === 'reminder' && (
-            <ErrorBoundary>
-              {renderReminder()}
-            </ErrorBoundary>
-          )}
+          
           
           {/* spare-parts tab now redirects to /spare-parts route */}
         </div>

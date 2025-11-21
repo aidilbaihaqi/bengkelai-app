@@ -75,6 +75,7 @@ export default function Chat() {
   const [isConnected, setIsConnected] = useState(true);
   const [typingDots, setTypingDots] = useState('');
   const [showMap, setShowMap] = useState(false);
+  const [mapCenter, setMapCenter] = useState(null);
   const [showQuickActions, setShowQuickActions] = useState(true);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -104,7 +105,7 @@ export default function Chat() {
   };
 
   // Interactive Map Component
-  const InteractiveMap = ({ onClose }) => {
+  const InteractiveMap = ({ onClose, center }) => {
     const [selectedBengkel, setSelectedBengkel] = useState(null);
     const [zoomLevel, setZoomLevel] = useState(1);
     const [mapPosition, setMapPosition] = useState({ x: 0, y: 0 });
@@ -124,7 +125,7 @@ export default function Chat() {
       
       // Simulasi loading
       setTimeout(() => {
-        setBengkelData(getDummyWorkshops());
+        setBengkelData(getDummyWorkshops(center));
         setIsLoadingWorkshops(false);
       }, 1000);
     };
@@ -160,49 +161,33 @@ export default function Chat() {
     };
 
     // Dummy data sebagai fallback
-    const getDummyWorkshops = () => [
-      {
-        id: 1,
-        name: 'Bengkel Jaya Motor',
-        distance: '0.5 km',
-        rating: 4.5,
-        address: 'Jl. Raya Utama No. 123',
-        phone: '021-1234-5678',
+    const getDummyWorkshops = (ctr) => {
+      const baseLat = ctr?.lat ?? 0.9000;
+      const baseLng = ctr?.lng ?? 104.6333;
+      const mk = (name, offsetLat, offsetLng, price, rating) => ({
+        id: name.length + Math.floor(Math.random() * 1000),
+        name,
+        distance: `${(Math.random() * 2 + 0.3).toFixed(1)} km`,
+        rating,
+        address: 'Kijang, Bintan, Kepulauan Riau',
+        phone: '0771-xxxx-xxxx',
         services: ['Service Rutin', 'Ganti Oli', 'Perbaikan Mesin'],
-        price: 'Rp 50-150k',
+        price,
         open: '08:00 - 20:00',
-        position: { x: 30, y: 25 }
-      },
-      {
-        id: 2,
-        name: 'Honda AHASS Sentral',
-        distance: '1.2 km',
-        rating: 4.8,
-        address: 'Jl. Ahmad Yani No. 456',
-        phone: '021-2345-6789',
-        services: ['Service Resmi Honda', 'Spare Part Original', 'Garansi Resmi'],
-        price: 'Rp 100-300k',
-        open: '08:00 - 17:00',
-        position: { x: 65, y: 50 }
-      },
-      {
-        id: 3,
-        name: 'Yamaha Service Center',
-        distance: '1.8 km',
-        rating: 4.6,
-        address: 'Jl. Sudirman No. 789',
-        phone: '021-3456-7890',
-        services: ['Service Yamaha', 'Tune Up', 'Injeksi Cleaning'],
-        price: 'Rp 75-250k',
-        open: '08:00 - 18:00',
-        position: { x: 45, y: 70 }
-      }
-    ];
+        lat: baseLat + offsetLat,
+        lng: baseLng + offsetLng
+      });
+      return [
+        mk('Bengkel Jaya Motor Kijang', 0.005, 0.004, 'Rp 50-150k', 4.5),
+        mk('Honda AHASS Kijang', -0.004, 0.006, 'Rp 100-300k', 4.8),
+        mk('Yamaha Service Center Bintan', 0.006, -0.005, 'Rp 75-250k', 4.6)
+      ];
+    };
 
     // Load workshops saat komponen dimount
     useEffect(() => {
       refreshWorkshopData();
-    }, []);
+    }, [center]);
 
     // Handle mouse events for dragging
     const handleMouseDown = (e) => {
@@ -305,6 +290,8 @@ export default function Chat() {
                   workshops={bengkelData}
                   onMarkerClick={setSelectedBengkel}
                   className="rounded-lg"
+                  center={center}
+                  zoom={13}
                 />
                 
                 {/* Map Controls Overlay */}
@@ -640,6 +627,14 @@ export default function Chat() {
       
       // Show map if location-related
       if (aiResponse.showMap) {
+        const lower = inputMessage.toLowerCase();
+        if (lower.includes('kijang') || lower.includes('bintan')) {
+          setMapCenter({ lat: 0.9000, lng: 104.6333 });
+        } else if (lower.includes('tanjung pinang') || lower.includes('tanjungpinang')) {
+          setMapCenter({ lat: 0.9167, lng: 104.4667 });
+        } else {
+          setMapCenter(null);
+        }
         setShowMap(true);
       }
       
@@ -683,7 +678,7 @@ export default function Chat() {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-cyan-500/5 to-blue-500/5 rounded-full blur-3xl" />
       </div>
       {/* Interactive Map Modal */}
-      {showMap && <InteractiveMap onClose={() => setShowMap(false)} />}
+      {showMap && <InteractiveMap onClose={() => setShowMap(false)} center={mapCenter} />}
       {/* Header */}
       <header className="backdrop-blur-xl bg-gradient-to-r from-slate-900/80 via-slate-800/60 to-slate-900/80 border-b border-cyan-500/20 px-3 sm:px-4 py-3 sm:py-4 relative z-10 ring-1 ring-white/10">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
