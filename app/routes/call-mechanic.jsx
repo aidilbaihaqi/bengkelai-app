@@ -282,7 +282,7 @@ export default function CallMechanic() {
                   </div>
                   
                   {/* Divider */}
-                  <div className="absolute inset-x-0 top-1/2 transform -translate-y-1/2 flex items-center justify-center">
+                  <div className="absolute inset-x-0 top-1/2 transform -translate-y-1/2 flex items-center justify-center pointer-events-none">
                     <div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 border border-white/30">
                       <span className="text-white text-sm font-medium">atau</span>
                     </div>

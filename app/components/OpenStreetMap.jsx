@@ -263,7 +263,7 @@ const OpenStreetMap = ({ workshops = [], onMarkerClick, onLocationSelect, classN
     <div 
       ref={mapRef} 
       className={`w-full h-full ${className}`}
-      style={{ height: '100%' }}
+      style={{ height: '100%', minHeight: '380px' }}
     />
   );
 };

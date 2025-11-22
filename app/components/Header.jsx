@@ -5,6 +5,7 @@ export default function Header({ title }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [hoveredItem, setHoveredItem] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -13,6 +14,21 @@ export default function Header({ title }) {
     
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const updateSize = () => {
+      try {
+        setIsMobile(window.innerWidth < 768);
+      } catch {}
+    };
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    window.addEventListener('orientationchange', updateSize);
+    return () => {
+      window.removeEventListener('resize', updateSize);
+      window.removeEventListener('orientationchange', updateSize);
+    };
   }, []);
 
   const location = useLocation();
@@ -24,7 +40,7 @@ export default function Header({ title }) {
     ? [
         { href: '/dashboard?tab=overview', label: 'Overview' },
         { href: '/dashboard?tab=workshop-finder', label: 'Workshop Finder' },
-        { href: '/spare-parts', label: 'Spare Parts' },
+        { href: '/dashboard?tab=spare-parts', label: 'Spare Parts' },
         { href: '/chat', label: 'AI Diagnosa' },
         { href: '/', label: 'Landing' }
       ]
@@ -36,16 +52,25 @@ export default function Header({ title }) {
         { href: '/spare-parts', label: 'Marketplace' },
         { href: '/', label: 'Landing' }
       ]
-    : [
-        { href: isRoot ? '#home' : '/#home', label: 'Home' },
-        { href: isRoot ? '#fitur' : '/#fitur', label: 'Fitur' },
-        { href: isRoot ? '#cara-kerja' : '/#cara-kerja', label: 'Cara Kerja' },
-        { href: isRoot ? '#demo' : '/#demo', label: 'Demo' },
-        { href: '/call-mechanic', label: 'Panggil Montir' },
-        { href: '/booking', label: 'Booking' },
-        { href: isRoot ? '#faq' : '/#faq', label: 'FAQ' },
-        { href: '/dashboard', label: 'Dashboard' }
-      ];
+    : (
+        isMobile
+          ? [
+              { href: '/chat', label: 'AI Diagnosa' },
+              { href: '/call-mechanic', label: 'Panggil Montir' },
+              { href: '/booking', label: 'Booking' },
+              { href: '/dashboard', label: 'Dashboard' }
+            ]
+          : [
+              { href: isRoot ? '#home' : '/#home', label: 'Home' },
+              { href: isRoot ? '#fitur' : '/#fitur', label: 'Fitur' },
+              { href: isRoot ? '#cara-kerja' : '/#cara-kerja', label: 'Cara Kerja' },
+              { href: isRoot ? '#demo' : '/#demo', label: 'Demo' },
+              { href: '/call-mechanic', label: 'Panggil Montir' },
+              { href: '/booking', label: 'Booking' },
+              { href: isRoot ? '#faq' : '/#faq', label: 'FAQ' },
+              { href: '/dashboard', label: 'Dashboard' }
+            ]
+      );
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${

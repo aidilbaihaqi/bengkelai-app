@@ -105,6 +105,7 @@ export default function Dashboard() {
   const [selectedWorkshop, setSelectedWorkshop] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [showMobileList, setShowMobileList] = useState(false);
   const [motorProfile, setMotorProfile] = useState({ merk: '', model: '', tahun: '', imageUrl: '' });
   const [profileMessage, setProfileMessage] = useState('');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -595,8 +596,8 @@ export default function Dashboard() {
           <p className="text-sm text-gray-300">Temukan bengkel terdekat</p>
         </button>
 
-        <Link
-          to="/spare-parts"
+        <button
+          onClick={() => { setActiveTab('spare-parts'); navigate('/dashboard?tab=spare-parts', { replace: true }); }}
           className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-green-500/30 rounded-xl p-6 text-left hover:from-green-600/30 hover:to-emerald-600/30 transition-all duration-200 group"
         >
           <div className="mb-2 group-hover:scale-110 transition-transform">
@@ -606,7 +607,7 @@ export default function Dashboard() {
           </div>
           <h4 className="font-semibold text-white mb-1">Spare Parts</h4>
           <p className="text-sm text-gray-300">Estimasi harga suku cadang</p>
-        </Link>
+        </button>
 
         <Link
           to="/workshop-dashboard"
@@ -681,22 +682,32 @@ export default function Dashboard() {
       { id: 3, name: "Yamaha Service Center Bintan", address: "Kijang, Bintan", phone: "0771-555-666", rating: 4.6, services: ["Tune Up", "Injeksi Cleaning"], price: "Rp 75-250k", lat: 0.8471512478952484, lng: 104.59655423894058, distance: "1.6 km" },
       { id: 4, name: "Bengkel Om Heri", address: "Kijang, Bintan", phone: "081233243881", rating: 4.7, services: ["Servis Umum", "Ganti Oli"], price: "Rp 50-200k", lat: 0.8496279042671772, lng: 104.59551946388257, distance: "0.9 km", url: "https://maps.app.goo.gl/8M2oxCbcj142HQuG6" }
     ];
+    const recommended = [...kijangWorkshops]
+      .sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance))
+      .slice(0, 3);
+
     return (
       <div className="space-y-6">
         <div className="bg-gradient-to-br from-slate-800/60 via-slate-700/40 to-slate-800/60 backdrop-blur-xl border border-cyan-500/20 ring-1 ring-white/10 rounded-xl p-6">
-          <div className="flex flex-col lg:flex-row h-[500px] lg:h-[600px]">
+          <div className="flex flex-col lg:flex-row h-[520px] lg:h-[600px]">
             <div className="flex-1 relative overflow-hidden">
               <OpenStreetMap workshops={kijangWorkshops} onMarkerClick={() => { }} className="rounded-lg" center={kijangCenter} />
               <div className="absolute top-4 right-4 z-30 backdrop-blur-xl bg-gradient-to-br from-slate-800/80 via-slate-700/60 to-slate-800/80 rounded-lg shadow-lg p-3 border border-cyan-400/30 ring-1 ring-white/20">
                 <div className="text-sm font-bold text-white mb-1">🗺️ Peta Kijang, Bintan</div>
                 <div className="text-xs text-cyan-300/80">Klik marker untuk detail bengkel</div>
               </div>
+              <button onClick={() => setShowMobileList(true)} className="lg:hidden absolute bottom-4 left-4 z-30 bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg text-sm shadow">
+                Daftar Bengkel
+              </button>
             </div>
-            <div className="w-full lg:w-96 border-l border-cyan-500/20 overflow-y-auto bg-slate-800/30">
+            <div className={`w-full lg:w-96 border-l border-cyan-500/20 overflow-y-auto bg-slate-800/30 ${showMobileList ? 'block' : 'hidden lg:block'}`}>
               <div className="p-4">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-semibold text-white">📋 Daftar Bengkel</h4>
                   <span className="text-xs text-cyan-300/80">{kijangWorkshops.length} bengkel</span>
+                </div>
+                <div className="lg:hidden flex justify-end mb-2">
+                  <button onClick={() => setShowMobileList(false)} className="px-3 py-1 text-xs bg-slate-700 hover:bg-slate-600 text-white rounded">Tutup</button>
                 </div>
                 {kijangWorkshops.map((b, i) => (
                   <div key={b.id} className="p-3 border rounded-lg mb-2 bg-slate-700/30 border-slate-600/50 hover:bg-slate-600/40 hover:border-cyan-500/30 transition-all duration-200">
@@ -725,6 +736,47 @@ export default function Dashboard() {
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+        <div className="bg-gradient-to-br from-slate-800/60 via-slate-700/40 to-slate-800/60 backdrop-blur-xl border border-cyan-500/20 ring-1 ring-white/10 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-lg font-semibold text-white">Rekomendasi Bengkel Terdekat</h4>
+            <button onClick={() => setShowMobileList(true)} className="hidden lg:inline-flex items-center gap-2 bg-cyan-500 hover:bg-cyan-600 text-white px-3 py-1 rounded text-xs">
+              Lihat Semua
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {recommended.map((b) => (
+              <div key={b.id} className="p-4 bg-slate-700/40 border border-slate-600/50 rounded-lg hover:border-cyan-500/40 hover:bg-slate-600/40 transition-all duration-200">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="text-sm font-semibold text-white">{b.name}</div>
+                    <div className="text-xs text-gray-300">{b.address}</div>
+                  </div>
+                  <div className="text-xs text-cyan-300 font-medium">{b.distance}</div>
+                </div>
+                <div className="mt-2 flex items-center justify-between">
+                  <div className="flex items-center gap-1 text-xs text-gray-300">
+                    <span className="text-yellow-400">⭐</span>
+                    <span>{b.rating}</span>
+                  </div>
+                  <div className="text-xs text-green-400 font-medium">{b.price}</div>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {(b.services || []).slice(0,3).map((s, i) => (
+                    <span key={i} className="text-xs bg-slate-800 text-gray-300 px-2 py-1 rounded-full">{s}</span>
+                  ))}
+                </div>
+                <div className="mt-3 flex items-center gap-2">
+                  {b.url ? (
+                    <a href={b.url} target="_blank" rel="noreferrer" className="flex-1 text-center bg-cyan-500 hover:bg-cyan-600 text-white px-3 py-2 rounded text-xs">Buka di Maps</a>
+                  ) : (
+                    <button className="flex-1 bg-slate-700 text-gray-300 px-3 py-2 rounded text-xs" disabled>Tidak ada link</button>
+                  )}
+                  <button onClick={() => setShowMobileList(true)} className="px-3 py-2 rounded text-xs bg-slate-700 text-gray-300 hover:bg-slate-600">Detail</button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -881,7 +933,7 @@ export default function Dashboard() {
 
           {/* Featured Products Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sparePartsData.slice(0, 6).map((product, index) => (
+            {oilRecommendations.slice(0, 6).map((product, index) => (
               <div key={index} className="bg-slate-800/40 border border-slate-700 rounded-lg p-4 hover:border-cyan-500/50 transition-all duration-300">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-12 h-12 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-lg flex items-center justify-center">
@@ -1730,7 +1782,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col relative pt-24">
       {/* Background Elements */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-cyan-500/5 to-blue-500/5 rounded-full blur-3xl" />
@@ -1762,12 +1814,8 @@ export default function Dashboard() {
             <button
               key={tab.id}
               onClick={() => {
-                if (tab.id === 'spare-parts') {
-                  navigate('/spare-parts');
-                } else {
-                  setActiveTab(tab.id);
-                  navigate(`/dashboard?tab=${tab.id}`, { replace: true });
-                }
+                setActiveTab(tab.id);
+                navigate(`/dashboard?tab=${tab.id}`, { replace: true });
               }}
               className={`px-4 py-2 rounded-lg transition-all duration-200 font-medium ${activeTab === tab.id
                   ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg ring-1 ring-white/20'
@@ -1799,7 +1847,11 @@ export default function Dashboard() {
 
 
 
-          {/* spare-parts tab now redirects to /spare-parts route */}
+          {activeTab === 'spare-parts' && (
+            <ErrorBoundary>
+              {renderSparePartsMarketplace()}
+            </ErrorBoundary>
+          )}
         </div>
       </div>
     </div>
