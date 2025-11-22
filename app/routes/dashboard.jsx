@@ -293,41 +293,41 @@ export default function Dashboard() {
   const workshops = [
     {
       id: 1,
-      name: "Bengkel Jaya Motor",
-      address: "Jl. Sudirman No. 123, Jakarta Pusat",
-      phone: "+62 21 1234567",
+      name: "Bengkel Jaya Motor Kolong Enam",
+      address: "Kolong Enam, Kijang Kota, Bintan Timur",
+      phone: "+62 771 1234567",
       rating: 4.5,
       services: ["Ganti Oli", "Servis Mesin", "Ganti Ban", "Tune Up"],
       openHours: "08:00 - 17:00",
-      lat: -6.2088,
-      lng: 106.8456,
-      distance: "1.2 km",
+      lat: 0.8501398062039124,
+      lng: 104.59655237584875,
+      distance: "0.3 km",
       specialties: ["Honda", "Yamaha", "Suzuki"]
     },
     {
       id: 2,
-      name: "Motor Service Center",
-      address: "Jl. Thamrin No. 456, Jakarta Pusat",
-      phone: "+62 21 7654321",
+      name: "Motor Service Center Bintan",
+      address: "Kolong Enam, Kijang Kota, Bintan Timur",
+      phone: "+62 771 7654321",
       rating: 4.2,
       services: ["Ganti Oli", "Tune Up", "Rem", "Electrical"],
       openHours: "09:00 - 18:00",
-      lat: -6.1944,
-      lng: 106.8229,
-      distance: "2.1 km",
+      lat: 0.8481398062039124,
+      lng: 104.59455237584875,
+      distance: "0.6 km",
       specialties: ["Kawasaki", "Honda", "Yamaha"]
     },
     {
       id: 3,
-      name: "Bengkel Mandiri",
-      address: "Jl. Gatot Subroto No. 789, Jakarta Selatan",
-      phone: "+62 21 9876543",
+      name: "Bengkel Mandiri Kijang",
+      address: "Kolong Enam, Kijang Kota, Bintan Timur",
+      phone: "+62 771 9876543",
       rating: 4.7,
       services: ["Ganti Oli", "AC Motor", "Electrical", "Body Repair"],
       openHours: "07:00 - 19:00",
-      lat: -6.2297,
-      lng: 106.8175,
-      distance: "3.5 km",
+      lat: 0.8491398062039124,
+      lng: 104.60455237584875,
+      distance: "0.9 km",
       specialties: ["Semua Merk", "Matic", "Sport"]
     },
     {
@@ -666,10 +666,10 @@ export default function Dashboard() {
   const renderWorkshopFinder = () => {
     const kijangCenter = { lat: 0.9000, lng: 104.6333 };
     const kijangWorkshops = [
-      { id: 1, name: "Bengkel Jaya Motor Kijang", address: "Kijang, Bintan", phone: "0771-111-222", rating: 4.5, services: ["Service Rutin", "Ganti Oli", "Tune Up"], price: "Rp 50-150k", lat: 0.9040, lng: 104.6373, distance: "0.7 km" },
-      { id: 2, name: "Honda AHASS Kijang", address: "Kijang, Bintan", phone: "0771-333-444", rating: 4.8, services: ["Service Resmi", "Spare Part Original"], price: "Rp 100-300k", lat: 0.8960, lng: 104.6413, distance: "1.2 km" },
-      { id: 3, name: "Yamaha Service Center Bintan", address: "Kijang, Bintan", phone: "0771-555-666", rating: 4.6, services: ["Tune Up", "Injeksi Cleaning"], price: "Rp 75-250k", lat: 0.9055, lng: 104.6268, distance: "1.6 km" },
-      { id: 4, name: "Bengkel Rekomendasi (Maps)", address: "Kijang, Bintan", phone: "", rating: 4.7, services: ["Servis Umum", "Ganti Oli"], price: "Rp 50-200k", lat: 0.9015, lng: 104.6347, distance: "0.9 km", url: "https://maps.app.goo.gl/8M2oxCbcj142HQuG6" }
+      { id: 1, name: "Bengkel Jaya Motor Kijang", address: "Kijang, Bintan", phone: "0771-111-222", rating: 4.5, services: ["Service Rutin", "Ganti Oli", "Tune Up"], price: "Rp 50-150k", lat: 0.8504461184169547, lng: 104.59379589182085, distance: "0.7 km" },
+      { id: 2, name: "Honda AHASS Kijang", address: "Kijang, Bintan", phone: "0771-333-444", rating: 4.8, services: ["Service Resmi", "Spare Part Original"], price: "Rp 100-300k", lat:0.8487726040164576, lng: 104.59424113850531, distance: "1.2 km" },
+      { id: 3, name: "Yamaha Service Center Bintan", address: "Kijang, Bintan", phone: "0771-555-666", rating: 4.6, services: ["Tune Up", "Injeksi Cleaning"], price: "Rp 75-250k", lat: 0.8471512478952484, lng: 104.59655423894058, distance: "1.6 km" },
+      { id: 4, name: "Bengkel Om Heri", address: "Kijang, Bintan", phone: "081233243881", rating: 4.7, services: ["Servis Umum", "Ganti Oli"], price: "Rp 50-200k", lat: 0.8496279042671772, lng: 104.59551946388257, distance: "0.9 km", url: "https://maps.app.goo.gl/8M2oxCbcj142HQuG6" }
     ];
     return (
       <div className="space-y-6">

@@ -34,10 +34,10 @@ const LeafletMap = ({ userLocation, onLocationUpdate }) => {
           iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
           shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
         });
-
+        
         // Initialize map
         const map = L.map(mapRef.current).setView(
-          [userLocation?.lat || -6.2088, userLocation?.lng || 106.8456], 
+          [userLocation?.lat || 0.8490518327820477, userLocation?.lng || 104.59609368235573], 
           13
         );
 
