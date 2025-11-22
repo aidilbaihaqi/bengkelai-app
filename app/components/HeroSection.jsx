@@ -61,11 +61,12 @@ export default function HeroSection() {
 
   return (
     <section 
+      id="home"
       ref={heroRef}
       className="relative min-h-screen flex items-center justify-center pt-20 pb-16 px-4 sm:px-6 lg:px-8 overflow-hidden"
     >
       {/* Enhanced Animated Background Elements with Parallax */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 pointer-events-none">
         <div 
           className="absolute top-20 left-10 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl animate-pulse transition-transform duration-1000 ease-out"
           style={{
@@ -344,9 +345,11 @@ export default function HeroSection() {
                           Prioritas: Menengah
                         </p>
                       </div>
-                      <button className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs px-3 py-1 rounded-full font-semibold hover:shadow-lg transition-all duration-300">
-                        Cari Bengkel Terdekat
-                      </button>
+                      <Link to="/dashboard?tab=workshop-finder">
+                        <button className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs px-3 py-1 rounded-full font-semibold hover:shadow-lg transition-all duration-300">
+                          Cari Bengkel Terdekat
+                        </button>
+                      </Link>
                     </div>
                   </div>
                 </div>

@@ -89,11 +89,11 @@ export default function BenefitsSection() {
   ];
 
   return (
-    <section ref={sectionRef} className="py-24 relative overflow-hidden">
+    <section id="benefits" ref={sectionRef} className="py-24 relative overflow-hidden">
       {/* Background Elements */}
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 to-slate-950/50" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(34,197,94,0.08),transparent_50%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,rgba(59,130,246,0.08),transparent_50%)]" />
+      <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-slate-900/80 to-slate-950/50" />
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_20%_30%,rgba(34,197,94,0.08),transparent_50%)]" />
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_80%_70%,rgba(59,130,246,0.08),transparent_50%)]" />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}

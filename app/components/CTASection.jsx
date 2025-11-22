@@ -50,25 +50,26 @@ export default function CTASection() {
   }, []);
   return (
     <section 
+      id="cta"
       ref={sectionRef}
       className="relative py-24 px-4 sm:px-6 lg:px-8 overflow-hidden"
     >
       {/* Interactive Background */}
       <div 
-        className="absolute inset-0 opacity-30 transition-all duration-1000"
+        className="absolute inset-0 opacity-30 transition-all duration-1000 pointer-events-none"
         style={{
           background: `radial-gradient(circle at ${mousePosition.x}% ${mousePosition.y}%, rgba(249, 115, 22, 0.1) 0%, transparent 50%)`
         }}
       />
       {/* Background Elements */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-10 left-10 w-80 h-80 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-10 right-10 w-96 h-96 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}} />
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-full blur-3xl" />
       </div>
       
       {/* Glass Pattern */}
-      <div className="absolute inset-0 opacity-20">
+      <div className="absolute inset-0 opacity-20 pointer-events-none">
         <div className="absolute top-20 left-20 w-24 h-24 border border-white/30 rounded-full backdrop-blur-sm" />
         <div className="absolute top-40 right-32 w-20 h-20 border border-cyan-300/30 rounded-full backdrop-blur-sm" />
         <div className="absolute bottom-32 left-40 w-16 h-16 border border-orange-300/30 rounded-full backdrop-blur-sm" />

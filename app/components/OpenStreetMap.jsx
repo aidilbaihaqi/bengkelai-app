@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import 'leaflet/dist/leaflet.css';
 
 const OpenStreetMap = ({ workshops = [], onMarkerClick, onLocationSelect, className = "", center, zoom = 13 }) => {
   const mapRef = useRef(null);
@@ -6,19 +7,18 @@ const OpenStreetMap = ({ workshops = [], onMarkerClick, onLocationSelect, classN
   const markersRef = useRef([]);
   const userLocationMarkerRef = useRef(null);
 
+  const onResizeRef = useRef(null);
+  const onVisibilityRef = useRef(null);
+  const roRef = useRef(null);
+
   useEffect(() => {
-    // Dynamic import untuk menghindari SSR issues
     const initMap = async () => {
       if (typeof window === 'undefined') return;
       
       try {
-        // Import Leaflet secara dinamis
-        const L = (await import('leaflet')).default;
+        const Leaflet = await import('leaflet');
+        const L = Leaflet.default || Leaflet;
         
-        // Import CSS Leaflet
-        await import('leaflet/dist/leaflet.css');
-        
-        // Fix untuk icon default Leaflet
         delete L.Icon.Default.prototype._getIconUrl;
         L.Icon.Default.mergeOptions({
           iconRetinaUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjUiIGhlaWdodD0iNDEiIHZpZXdCb3g9IjAgMCAyNSA0MSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyLjUgMEMxOS40MDM2IDAgMjUgNS41OTY0NCAyNSAxMi41QzI1IDE5LjQwMzYgMTkuNDAzNiAyNSAxMi41IDI1QzUuNTk2NDQgMjUgMCAxOS40MDM2IDAgMTIuNUMwIDUuNTk2NDQgNS41OTY0NCAwIDEyLjUgMFoiIGZpbGw9IiNGRjQ0NDQiLz4KPHBhdGggZD0iTTEyLjUgNEM5LjQ2MjQ0IDQgNyA2LjQ2MjQ0IDcgOS41QzcgMTIuNTM3NiA5LjQ2MjQ0IDE1IDEyLjUgMTVDMTUuNTM3NiAxNSAxOCAxMi41Mzc2IDE4IDkuNUMxOCA2LjQ2MjQ0IDE1LjUzNzYgNCAxMi41IDRaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMTIuNSAyNUwxMi41IDQxIiBzdHJva2U9IiNGRjQ0NDQiIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K',
@@ -51,8 +51,37 @@ const OpenStreetMap = ({ workshops = [], onMarkerClick, onLocationSelect, classN
           maxZoom: 19
         }).addTo(map);
 
-        // Simpan referensi map
         mapInstanceRef.current = map;
+        requestAnimationFrame(() => {
+          try { map.invalidateSize(); } catch {}
+        });
+        setTimeout(() => {
+          try { map.invalidateSize(); } catch {}
+        }, 300);
+
+        const onResize = () => {
+          try { map.invalidateSize(); } catch {}
+        };
+        onResizeRef.current = onResize;
+        window.addEventListener('resize', onResize);
+        window.addEventListener('orientationchange', onResize);
+
+        const onVisibility = () => {
+          if (!document.hidden) {
+            try { map.invalidateSize(); } catch {}
+          }
+        };
+        onVisibilityRef.current = onVisibility;
+        document.addEventListener('visibilitychange', onVisibility);
+
+        let ro;
+        try {
+          ro = new ResizeObserver(() => {
+            try { map.invalidateSize(); } catch {}
+          });
+          roRef.current = ro;
+          if (mapRef.current) ro.observe(mapRef.current);
+        } catch {}
 
         // Tambahkan event listener untuk klik pada peta (untuk memilih lokasi)
         if (onLocationSelect) {
@@ -121,7 +150,6 @@ const OpenStreetMap = ({ workshops = [], onMarkerClick, onLocationSelect, classN
           });
         }
 
-        // Hapus marker workshop yang sudah ada
         markersRef.current.forEach(marker => {
           map.removeLayer(marker);
         });
@@ -192,10 +220,15 @@ const OpenStreetMap = ({ workshops = [], onMarkerClick, onLocationSelect, classN
           markersRef.current.push(marker);
         });
 
-        // Fit map ke semua markers jika ada
         if (markersRef.current.length > 0) {
           const group = new L.featureGroup(markersRef.current);
           map.fitBounds(group.getBounds().pad(0.1));
+          requestAnimationFrame(() => {
+            try { map.invalidateSize(); } catch {}
+          });
+          setTimeout(() => {
+            try { map.invalidateSize(); } catch {}
+          }, 300);
         }
 
       } catch (error) {
@@ -205,8 +238,17 @@ const OpenStreetMap = ({ workshops = [], onMarkerClick, onLocationSelect, classN
 
     initMap();
 
-    // Cleanup function
     return () => {
+      try {
+        if (onResizeRef.current) {
+          window.removeEventListener('resize', onResizeRef.current);
+          window.removeEventListener('orientationchange', onResizeRef.current);
+        }
+        if (onVisibilityRef.current) {
+          document.removeEventListener('visibilitychange', onVisibilityRef.current);
+        }
+        if (roRef.current) roRef.current.disconnect();
+      } catch {}
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
@@ -221,7 +263,7 @@ const OpenStreetMap = ({ workshops = [], onMarkerClick, onLocationSelect, classN
     <div 
       ref={mapRef} 
       className={`w-full h-full ${className}`}
-      style={{ minHeight: '400px' }}
+      style={{ height: '100%' }}
     />
   );
 };

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "@remix-run/react";
+import { Link, useNavigate, useLocation } from "@remix-run/react";
+import Header from "../components/Header";
 import LoadingSpinner, { SkeletonLoader, CardSkeleton, ButtonLoading } from "../components/LoadingSpinner";
 import ErrorBoundary from "../components/ErrorBoundary";
 import OpenStreetMap from "../components/OpenStreetMap";
@@ -13,12 +14,21 @@ export const meta = () => {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState('overview');
   const [userName, setUserName] = useState('Guest');
   const [showOilModal, setShowOilModal] = useState(false);
   const [motorCondition, setMotorCondition] = useState({
     oil: { status: 'critical', percentage: 25, lastCheck: '2024-01-05' }
   });
+
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(location.search);
+      const tab = params.get('tab');
+      if (tab) setActiveTab(tab);
+    } catch {}
+  }, [location.search]);
 
   // Data edukasi motor
   const motorEducation = [
@@ -460,7 +470,7 @@ export default function Dashboard() {
             <h2 className="text-2xl font-bold text-white">Halo, {userName} 👋</h2>
             <p className="text-cyan-300">Selamat datang di Dashboard BengkelAI</p>
           </div>
-          <button onClick={()=>setActiveTab('workshop-finder')} className="hidden lg:inline-flex items-center gap-2 bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg transition-colors">
+          <button onClick={()=>{ setActiveTab('workshop-finder'); navigate('/dashboard?tab=workshop-finder', { replace: true }); }} className="hidden lg:inline-flex items-center gap-2 bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg transition-colors">
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20l6-6-6-6v12z" /></svg>
             <span>Cari Bengkel</span>
           </button>
@@ -573,7 +583,7 @@ export default function Dashboard() {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <button
-          onClick={() => setActiveTab('workshop-finder')}
+          onClick={() => { setActiveTab('workshop-finder'); navigate('/dashboard?tab=workshop-finder', { replace: true }); }}
           className="bg-gradient-to-br from-cyan-600/20 to-blue-600/20 border border-cyan-500/30 rounded-xl p-6 text-left hover:from-cyan-600/30 hover:to-blue-600/30 transition-all duration-200 group"
         >
           <div className="mb-2 group-hover:scale-110 transition-transform">
@@ -726,6 +736,10 @@ export default function Dashboard() {
     const [inventoryItems, setInventoryItems] = React.useState([]);
     const [newLog, setNewLog] = React.useState({ tanggal: '', plat: '', merk: '', model: '', keluhan: '', status: 'Masuk' });
     const [newItem, setNewItem] = React.useState({ nama: '', stok: 0, harga: 0, satuan: 'pcs' });
+    const [editingLogId, setEditingLogId] = React.useState(null);
+    const [editingItemId, setEditingItemId] = React.useState(null);
+    const [editLogDraft, setEditLogDraft] = React.useState(null);
+    const [editItemDraft, setEditItemDraft] = React.useState(null);
     const addLog = () => {
       if (!newLog.plat || !newLog.merk) return;
       setWorkshopLogs([{ id: Date.now(), ...newLog }, ...workshopLogs]);
@@ -760,12 +774,36 @@ export default function Dashboard() {
               <div className="text-gray-300">Belum ada log</div>
             ) : workshopLogs.map(l => (
               <div key={l.id} className="p-3 bg-slate-700/30 border border-slate-600/50 rounded-lg">
-                <div className="flex justify-between text-sm text-white"><span>{l.tanggal} • {l.plat} • {l.merk} {l.model}</span><span className="text-cyan-300">{l.status}</span></div>
-                <div className="text-xs text-gray-300">Keluhan: {l.keluhan}</div>
-                <div className="mt-2 flex gap-2">
-                  <button onClick={() => updateLogStatus(l.id, 'Proses')} className="px-2 py-1 bg-yellow-500 text-white rounded">Proses</button>
-                  <button onClick={() => updateLogStatus(l.id, 'Selesai')} className="px-2 py-1 bg-green-600 text-white rounded">Selesai</button>
-                </div>
+                {editingLogId === l.id ? (
+                  <div className="space-y-2 text-sm text-white">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                      <input value={editLogDraft?.tanggal || ''} onChange={(e) => setEditLogDraft({ ...editLogDraft, tanggal: e.target.value })} type="date" className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2" />
+                      <input value={editLogDraft?.plat || ''} onChange={(e) => setEditLogDraft({ ...editLogDraft, plat: e.target.value })} placeholder="Plat Nomor" className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2" />
+                      <input value={editLogDraft?.merk || ''} onChange={(e) => setEditLogDraft({ ...editLogDraft, merk: e.target.value })} placeholder="Merk" className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2" />
+                      <input value={editLogDraft?.model || ''} onChange={(e) => setEditLogDraft({ ...editLogDraft, model: e.target.value })} placeholder="Model" className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 md:col-span-2" />
+                      <input value={editLogDraft?.keluhan || ''} onChange={(e) => setEditLogDraft({ ...editLogDraft, keluhan: e.target.value })} placeholder="Keluhan" className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 md:col-span-3" />
+                      <select value={editLogDraft?.status || 'Masuk'} onChange={(e) => setEditLogDraft({ ...editLogDraft, status: e.target.value })} className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 md:col-span-1">
+                        <option>Masuk</option>
+                        <option>Proses</option>
+                        <option>Selesai</option>
+                      </select>
+                    </div>
+                    <div className="flex gap-2 mt-2">
+                      <button onClick={() => { setWorkshopLogs(workshopLogs.map(ll => ll.id === l.id ? editLogDraft : ll)); setEditingLogId(null); setEditLogDraft(null); }} className="px-3 py-1 bg-cyan-600 text-white rounded">Simpan</button>
+                      <button onClick={() => { setEditingLogId(null); setEditLogDraft(null); }} className="px-3 py-1 bg-slate-600 text-white rounded">Batal</button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex justify-between text-sm text-white"><span>{l.tanggal} • {l.plat} • {l.merk} {l.model}</span><span className="text-cyan-300">{l.status}</span></div>
+                    <div className="text-xs text-gray-300">Keluhan: {l.keluhan}</div>
+                    <div className="mt-2 flex gap-2">
+                      <button onClick={() => updateLogStatus(l.id, 'Proses')} className="px-2 py-1 bg-yellow-500 text-white rounded">Proses</button>
+                      <button onClick={() => updateLogStatus(l.id, 'Selesai')} className="px-2 py-1 bg-green-600 text-white rounded">Selesai</button>
+                      <button onClick={() => { setEditingLogId(l.id); setEditLogDraft({ ...l }); }} className="px-2 py-1 bg-blue-600 text-white rounded">Edit</button>
+                    </div>
+                  </>
+                )}
               </div>
             ))}
           </div>
@@ -774,8 +812,8 @@ export default function Dashboard() {
           <h3 className="text-xl font-bold text-white mb-4">📦 Pencatatan Barang</h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
             <input value={newItem.nama} onChange={(e) => setNewItem({ ...newItem, nama: e.target.value })} placeholder="Nama Barang" className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white md:col-span-2" />
-            <input value={newItem.stok} onChange={(e) => setNewItem({ ...newItem, stok: parseInt(e.target.value || '0') })} type="number" placeholder="Stok" className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white" />
-            <input value={newItem.harga} onChange={(e) => setNewItem({ ...newItem, harga: parseInt(e.target.value || '0') })} type="number" placeholder="Harga" className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white" />
+            <input value={newItem.stok} onChange={(e) => setNewItem({ ...newItem, stok: parseInt(e.target.value || '0') })} type="number" placeholder="tolong masukin pieces" className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white" />
+            <input value={newItem.harga} onChange={(e) => setNewItem({ ...newItem, harga: parseInt(e.target.value || '0') })} type="number" placeholder="tolong masukin harga" className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white" />
             <select value={newItem.satuan} onChange={(e) => setNewItem({ ...newItem, satuan: e.target.value })} className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white">
               <option>pcs</option>
               <option>liter</option>
@@ -787,9 +825,31 @@ export default function Dashboard() {
             {inventoryItems.length === 0 ? (
               <div className="text-gray-300">Belum ada barang</div>
             ) : inventoryItems.map(i => (
-              <div key={i.id} className="p-3 bg-slate-700/30 border border-slate-600/50 rounded-lg flex justify-between items-center">
-                <div className="text-sm text-white">{i.nama} • {i.stok} {i.satuan} • Rp {i.harga.toLocaleString()}</div>
-                <button onClick={() => removeItem(i.id)} className="px-2 py-1 bg-red-500 text-white rounded">Hapus</button>
+              <div key={i.id} className="p-3 bg-slate-700/30 border border-slate-600/50 rounded-lg">
+                {editingItemId === i.id ? (
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-end">
+                    <input value={editItemDraft?.nama || ''} onChange={(e) => setEditItemDraft({ ...editItemDraft, nama: e.target.value })} placeholder="Nama Barang" className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white md:col-span-2" />
+                    <input value={editItemDraft?.stok ?? 0} onChange={(e) => setEditItemDraft({ ...editItemDraft, stok: parseInt(e.target.value || '0') })} type="number" placeholder="tolong masukin pieces" className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white" />
+                    <input value={editItemDraft?.harga ?? 0} onChange={(e) => setEditItemDraft({ ...editItemDraft, harga: parseInt(e.target.value || '0') })} type="number" placeholder="tolong masukin harga" className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white" />
+                    <select value={editItemDraft?.satuan || 'pcs'} onChange={(e) => setEditItemDraft({ ...editItemDraft, satuan: e.target.value })} className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white">
+                      <option>pcs</option>
+                      <option>liter</option>
+                      <option>set</option>
+                    </select>
+                    <div className="flex gap-2">
+                      <button onClick={() => { setInventoryItems(inventoryItems.map(ii => ii.id === i.id ? editItemDraft : ii)); setEditingItemId(null); setEditItemDraft(null); }} className="px-3 py-1 bg-cyan-600 text-white rounded">Simpan</button>
+                      <button onClick={() => { setEditingItemId(null); setEditItemDraft(null); }} className="px-3 py-1 bg-slate-600 text-white rounded">Batal</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex justify-between items-center">
+                    <div className="text-sm text-white">{i.nama} • {i.stok} {i.satuan} • Rp {i.harga.toLocaleString()}</div>
+                    <div className="flex gap-2">
+                      <button onClick={() => { setEditingItemId(i.id); setEditItemDraft({ ...i }); }} className="px-2 py-1 bg-blue-600 text-white rounded">Edit</button>
+                      <button onClick={() => removeItem(i.id)} className="px-2 py-1 bg-red-500 text-white rounded">Hapus</button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -1668,7 +1728,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col relative">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col relative pt-24">
       {/* Background Elements */}
       <div className="absolute inset-0">
         <div className="absolute top-20 left-10 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" />
@@ -1676,38 +1736,7 @@ export default function Dashboard() {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-cyan-500/5 to-blue-500/5 rounded-full blur-3xl" />
       </div>
 
-      {/* Header */}
-      <header className="backdrop-blur-xl bg-gradient-to-r from-slate-900/80 via-slate-800/60 to-slate-900/80 border-b border-cyan-500/20 px-4 py-4 relative z-10 ring-1 ring-white/10">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center mr-6 hover:opacity-80 transition-opacity">
-              <img
-                src="/32x32.svg"
-                alt="BengkelAI Logo"
-                className="w-8 h-8 mr-3"
-                width="32"
-                height="32"
-              />
-              <span className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">BengkelAI</span>
-            </Link>
-            <h1 className="text-xl font-semibold text-white">Dashboard</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link
-              to="/chat"
-              className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-cyan-400 hover:to-blue-500 transition-all duration-200 ring-1 ring-white/20 flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4v3c0 .6.4 1 1 1 .2 0 .5-.1.7-.3L14.4 18H20c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
-              </svg>
-              Chat AI
-            </Link>
-            <div className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
-              U
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header title="Dashboard" />
 
       {/* Navigation Tabs */}
       <div className="max-w-6xl mx-auto w-full px-4 py-6 relative z-10">
@@ -1737,6 +1766,7 @@ export default function Dashboard() {
                   navigate('/spare-parts');
                 } else {
                   setActiveTab(tab.id);
+                  navigate(`/dashboard?tab=${tab.id}`, { replace: true });
                 }
               }}
               className={`px-4 py-2 rounded-lg transition-all duration-200 font-medium ${activeTab === tab.id

@@ -12,6 +12,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Link } from "@remix-run/react";
+import Header from "../components/Header";
 import { json } from "@remix-run/node";
 import Button from "../components/Button";
 import OpenStreetMap from "../components/OpenStreetMap";
@@ -281,7 +282,7 @@ export default function Chat() {
             
           </div>
           
-          <div className="flex flex-col lg:flex-row h-[500px] lg:h-[600px]">
+          <div className="flex flex-col lg:flex-row h-[70vh] lg:h-[600px]">
             {/* Map Area */}
             <div className="flex-1 bg-gradient-to-br from-blue-100 to-green-100 relative overflow-hidden">
               {/* OpenStreetMap */}
@@ -670,7 +671,7 @@ export default function Chat() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col relative">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col relative pt-24">
       {/* Background Elements */}
       <div className="absolute inset-0">
         <div className="absolute top-20 left-10 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" />
@@ -679,34 +680,7 @@ export default function Chat() {
       </div>
       {/* Interactive Map Modal */}
       {showMap && <InteractiveMap onClose={() => setShowMap(false)} center={mapCenter} />}
-      {/* Header */}
-      <header className="backdrop-blur-xl bg-gradient-to-r from-slate-900/80 via-slate-800/60 to-slate-900/80 border-b border-cyan-500/20 px-3 sm:px-4 py-3 sm:py-4 relative z-10 ring-1 ring-white/10">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center flex-1 min-w-0">
-            <Link to="/dashboard" className="text-cyan-400 hover:text-cyan-300 transition-colors duration-200 text-sm sm:text-base font-medium mr-3 sm:mr-6">
-              Dashboard
-            </Link>
-            <div className="flex items-center min-w-0 flex-1">
-              <div className={`w-2 h-2 rounded-full mr-2 flex-shrink-0 ${
-                isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'
-              }`}></div>
-              <span className="text-xs sm:text-sm text-cyan-300/80 truncate">
-                {isConnected ? 'Real-time Connected' : 'Reconnecting...'}
-              </span>
-              {isTyping && (
-                <span className="ml-2 sm:ml-3 text-xs text-blue-600 flex items-center flex-shrink-0">
-                  <span className="hidden sm:inline">Analyzing{typingDots}</span>
-                  <span className="sm:hidden">AI{typingDots}</span>
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="text-xs sm:text-sm text-white/60 flex-shrink-0 ml-2">
-            <span className="hidden sm:inline">Konsultasi Gratis</span>
-            <span className="sm:hidden">Gratis</span>
-          </div>
-        </div>
-      </header>
+      <Header title="AI Diagnosa" />
 
       {/* Chat Container */}
       <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full relative z-10 min-h-0">
@@ -715,7 +689,6 @@ export default function Chat() {
           ref={messagesScrollRef}
           className="flex-1 overflow-y-auto overflow-x-hidden hide-scrollbar px-3 sm:px-4 pt-4 sm:pt-6 space-y-3 sm:space-y-4 scrollbar-thin scrollbar-thumb-cyan-500/20 scrollbar-track-transparent"
           style={{
-            height: 'calc(100dvh - 0px)',
             paddingBottom: `calc(${footerH}px + env(safe-area-inset-bottom, 0px))`
           }}
         >
@@ -837,7 +810,7 @@ export default function Chat() {
         </div>
 
         {/* Sticky Bottom Section - Quick Actions, Suggestions, and Input */}
-        <div ref={footerRef} className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900 via-slate-900/95 to-slate-900/90 backdrop-blur-xl border-t border-cyan-500/20 ring-1 ring-white/10 z-50">
+        <div ref={footerRef} className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900 via-slate-900/95 to-slate-900/90 backdrop-blur-xl border-t border-cyan-500/20 ring-1 ring-white/10 z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
             <div className="max-w-4xl mx-auto">
 
           {/* Quick Suggestions */}

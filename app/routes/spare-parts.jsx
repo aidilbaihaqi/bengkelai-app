@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "@remix-run/react";
+import Header from "../components/Header";
 
 export const meta = () => {
   return [
@@ -360,64 +361,8 @@ export default function SpareParts() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Header */}
-      <header className="bg-slate-900/80 backdrop-blur-xl border-b border-cyan-500/20 sticky top-0 z-40" role="banner">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center gap-2" aria-label="BengkelAI - Kembali ke beranda">
-              <img 
-                src="/32x32.svg" 
-                alt="BengkelAI Logo" 
-                className="w-8 h-8"
-                width="32"
-                height="32"
-              />
-              <span className="text-white font-bold text-xl">BengkelAI</span>
-            </Link>
-            
-            <nav className="hidden md:flex items-center gap-6" role="navigation" aria-label="Navigasi utama">
-              <Link to="/dashboard" className="text-gray-300 hover:text-white transition-colors">
-                Dashboard User
-              </Link>
-              <Link to="/workshop-dashboard" className="text-gray-300 hover:text-white transition-colors">
-                Dashboard Bengkel
-              </Link>
-              <Link to="/workshop-logs" className="text-gray-300 hover:text-white transition-colors">
-                Log Bengkel
-              </Link>
-              <Link to="/workshop-stock" className="text-gray-300 hover:text-white transition-colors">
-                Stok Bengkel
-              </Link>
-              <Link to="/workshop-spareparts" className="text-gray-300 hover:text-white transition-colors">
-                Sparepart Bengkel
-              </Link>
-              <Link to="/chat" className="text-gray-300 hover:text-white transition-colors">
-                Chat AI
-              </Link>
-              <span className="text-cyan-400 font-medium" aria-current="page">Spare Parts</span>
-            </nav>
-
-            {/* Cart Button */}
-            <button 
-              ref={cartTriggerRef}
-              onClick={() => setShowCart(true)}
-              className="relative bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
-              aria-label={`Buka keranjang belanja (${cart.length} item)`}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 11-4 0v-6m4 0V9a2 2 0 10-4 0v4.01" />
-              </svg>
-              Keranjang
-              {cart.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center" aria-hidden="true">
-                  {cart.length}
-                </span>
-              )}
-            </button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pt-24">
+      <Header title="Marketplace" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
@@ -429,6 +374,25 @@ export default function SpareParts() {
             Temukan spare parts berkualitas tinggi untuk motor Anda dengan harga terbaik
           </p>
         </section>
+
+        <div className="flex justify-end mb-6">
+          <button 
+            ref={cartTriggerRef}
+            onClick={() => setShowCart(true)}
+            className="relative bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+            aria-label={`Buka keranjang belanja (${cart.length} item)`}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 11-4 0v-6m4 0V9a2 2 0 10-4 0v4.01" />
+            </svg>
+            Keranjang
+            {cart.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center" aria-hidden="true">
+                {cart.length}
+              </span>
+            )}
+          </button>
+        </div>
 
         {/* Search and Filter */}
         <section className="mb-8" role="search" aria-label="Pencarian dan filter produk">
@@ -611,7 +575,6 @@ export default function SpareParts() {
         )}
       </div>
 
-      {/* Shopping Cart Modal */}
       {showCart && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="cart-title">
           <div ref={cartModalRef} className="bg-slate-900 rounded-2xl border border-cyan-500/30 w-full max-w-md max-h-[80vh] overflow-hidden">

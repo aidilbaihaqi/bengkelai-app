@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from '@remix-run/react';
 
 export default function FeaturesSection() {
   const [visibleFeatures, setVisibleFeatures] = useState(new Set());
   const sectionRef = useRef(null);
   const featureRefs = useRef([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -42,7 +44,8 @@ export default function FeaturesSection() {
       badge: "AI Powered",
       gradient: "from-cyan-500/20 to-blue-500/20",
       borderGradient: "from-cyan-300/40 to-blue-300/40",
-      iconBg: "from-cyan-400 to-blue-500"
+      iconBg: "from-cyan-400 to-blue-500",
+      link: "/chat"
     },
     {
       icon: (
@@ -56,7 +59,8 @@ export default function FeaturesSection() {
       badge: "Step by Step",
       gradient: "from-emerald-500/20 to-green-500/20",
       borderGradient: "from-emerald-300/40 to-green-300/40",
-      iconBg: "from-emerald-400 to-green-500"
+      iconBg: "from-emerald-400 to-green-500",
+      link: "/chat"
     },
     {
       icon: (
@@ -71,16 +75,17 @@ export default function FeaturesSection() {
       badge: "Coming Soon",
       gradient: "from-orange-500/20 to-red-500/20",
       borderGradient: "from-orange-300/40 to-red-300/40",
-      iconBg: "from-orange-400 to-red-500"
+      iconBg: "from-orange-400 to-red-500",
+      link: "/dashboard?tab=workshop-finder"
     }
   ];
 
   return (
-    <section ref={sectionRef} className="py-24 relative overflow-hidden">
+    <section id="fitur" ref={sectionRef} className="py-24 relative overflow-hidden">
       {/* Background Elements */}
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-950/50 to-slate-900/80" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(120,119,198,0.1),transparent_50%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(255,107,107,0.08),transparent_50%)]" />
+      <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-slate-950/50 to-slate-900/80" />
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_30%_40%,rgba(120,119,198,0.1),transparent_50%)]" />
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_70%_80%,rgba(255,107,107,0.08),transparent_50%)]" />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
@@ -106,16 +111,19 @@ export default function FeaturesSection() {
         {/* Feature Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {features.map((feature, index) => (
-            <div
+            <Link
+              to={feature.link}
+              prefetch="intent"
               key={index}
               ref={el => featureRefs.current[index] = el}
-              className={`group relative p-8 rounded-3xl backdrop-blur-xl bg-gradient-to-br ${feature.gradient} border border-white/10 hover:border-white/20 transition-all duration-700 hover:-translate-y-2 hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)] cursor-pointer transform hover:scale-105 ${visibleFeatures.has(index) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+              className={`group relative p-8 rounded-3xl backdrop-blur-xl bg-gradient-to-br ${feature.gradient} border border-white/10 hover:border-white/20 transition-all duration-700 hover:-translate-y-2 hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)] transform hover:scale-105 ${visibleFeatures.has(index) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'scale(1.05) rotateY(5deg) translateY(-8px)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'scale(1) rotateY(0deg) translateY(0px)';
               }}
+              onClick={() => navigate(feature.link)}
             >
               {/* Glass Effect Overlay */}
               <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -168,7 +176,7 @@ export default function FeaturesSection() {
                   </div>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
         

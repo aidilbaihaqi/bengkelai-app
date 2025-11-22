@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "@remix-run/react";
+import Header from "../components/Header";
 
 export const meta = () => {
   return [
@@ -12,6 +13,7 @@ export default function WorkshopDashboard() {
   const [logsCount, setLogsCount] = useState(0);
   const [inventoryCount, setInventoryCount] = useState(0);
   const [marketCount, setMarketCount] = useState(0);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -25,25 +27,8 @@ export default function WorkshopDashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <header className="bg-slate-900/80 backdrop-blur-xl border-b border-cyan-500/20 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center gap-2">
-              <img src="/32x32.svg" alt="BengkelAI Logo" className="w-8 h-8" />
-              <span className="text-white font-bold text-xl">BengkelAI</span>
-            </Link>
-            <nav className="hidden md:flex items-center gap-6">
-              <Link to="/dashboard" className="text-gray-300 hover:text-white transition-colors">Dashboard User</Link>
-              <Link to="/workshop-logs" className="text-gray-300 hover:text-white transition-colors">Log</Link>
-              <Link to="/workshop-stock" className="text-gray-300 hover:text-white transition-colors">Stok</Link>
-              <Link to="/workshop-spareparts" className="text-gray-300 hover:text-white transition-colors">Sparepart</Link>
-              <Link to="/spare-parts" className="text-gray-300 hover:text-white transition-colors">Marketplace</Link>
-              <Link to="/chat" className="text-gray-300 hover:text-white transition-colors">AI Chat</Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pt-24">
+      <Header title="Dashboard Bengkel" />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">

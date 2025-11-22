@@ -29,6 +29,7 @@ export default function Index() {
       
       {/* Call to Action */}
       <CTASection />
+      <div id="faq"></div>
     </div>
   );
 }
